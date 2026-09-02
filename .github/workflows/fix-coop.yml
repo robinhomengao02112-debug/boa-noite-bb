@@ -1,0 +1,65 @@
+name: Corrigir coop simultaneo
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-coop.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout gh-pages
+        uses: actions/checkout@v6
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+
+      - name: Corrigir entradas simultaneas
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          p=Path('game.js')
+          s=p.read_text(encoding='utf-8')
+
+          old="""window.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();if(!keys.has(e.key))tap.add(e.key);keys.add(e.key);c.focus()});window.addEventListener('keyup',e=>keys.delete(e.key));"""
+          new="""const BLOCKED_BROWSER_KEYS=new Set(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space']);
+          window.addEventListener('keydown',e=>{const code=e.code;if(BLOCKED_BROWSER_KEYS.has(code))e.preventDefault();if(!keys.has(code))tap.add(code);keys.add(code)});window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener('blur',()=>{keys.clear();tap.clear()});"""
+          if old not in s:
+              raise SystemExit('listener antigo nao encontrado')
+          s=s.replace(old,new)
+
+          old_frame="""function frame(now){let dt=Math.min(.033,(now-last)/1000);last=now;if(!paused){move(p1,(keys.has('d')?1:0)-(keys.has('a')?1:0),(keys.has('s')?1:0)-(keys.has('w')?1:0),dt);move(p2,(keys.has('ArrowRight')?1:0)-(keys.has('ArrowLeft')?1:0),(keys.has('ArrowDown')?1:0)-(keys.has('ArrowUp')?1:0),dt);if(tap.has('q'))p1.tool=(p1.tool+1)%tools.length;if(tap.has('Shift'))p2.tool=(p2.tool+1)%tools.length;if(tap.has('e'))act(p1);if(tap.has('Enter'))act(p2);if(tap.has('b')||tap.has('B')){buildMode=!buildMode;buildBtn.classList.toggle('primary',buildMode)}if(tap.has('f')||tap.has('F')){for(const a of zoo)if(dist(p1,a)<150||dist(p2,a)<150){a.fed=1;a.happy=clamp(a.happy+8,0,100)}}if(tap.has('p')||tap.has('P'))paused=!paused;tap.clear();min+=dt*8;if(min>=1320)nextDay();updateZoo(dt);let mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;cam.x=clamp(mx-W/2,0,MW-W);cam.y=clamp(my-H/2,0,MH-H);for(let i=particles.length-1;i>=0;i--){let q=particles[i];q.life-=dt;q.x+=q.vx*dt;q.y+=q.vy*dt;if(q.life<=0)particles.splice(i,1)}if(msgT>0&&(msgT-=dt)<=0)toast.style.opacity=0}draw();hud();requestAnimationFrame(frame)}"""
+
+          new_frame="""function padInput(dt){const pads=[...(navigator.getGamepads?navigator.getGamepads():[])].filter(Boolean);const read=(gp,p)=>{if(!gp)return;let ax=Math.abs(gp.axes[0]||0)>.18?gp.axes[0]:0,ay=Math.abs(gp.axes[1]||0)>.18?gp.axes[1]:0;move(p,ax,ay,dt);let a=!!gp.buttons[0]?.pressed,l=!!gp.buttons[4]?.pressed;if(a&&!p._pa)act(p);if(l&&!p._pl)p.tool=(p.tool+1)%tools.length;p._pa=a;p._pl=l};if(pads.length===1)read(pads[0],p2);else if(pads.length>=2){read(pads[0],p1);read(pads[1],p2)}}
+          function frame(now){let dt=Math.min(.033,(now-last)/1000);last=now;if(!paused){let p1x=(keys.has('KeyD')?1:0)-(keys.has('KeyA')?1:0),p1y=(keys.has('KeyS')?1:0)-(keys.has('KeyW')?1:0),p2x=(keys.has('ArrowRight')?1:0)-(keys.has('ArrowLeft')?1:0),p2y=(keys.has('ArrowDown')?1:0)-(keys.has('ArrowUp')?1:0);move(p1,p1x,p1y,dt);move(p2,p2x,p2y,dt);padInput(dt);if(tap.has('KeyQ'))p1.tool=(p1.tool+1)%tools.length;if(tap.has('ShiftLeft')||tap.has('ShiftRight'))p2.tool=(p2.tool+1)%tools.length;if(tap.has('KeyE'))act(p1);if(tap.has('Enter')||tap.has('NumpadEnter'))act(p2);if(tap.has('KeyB')){buildMode=!buildMode;buildBtn.classList.toggle('primary',buildMode)}if(tap.has('KeyF')){for(const a of zoo)if(dist(p1,a)<150||dist(p2,a)<150){a.fed=1;a.happy=clamp(a.happy+8,0,100)}}if(tap.has('KeyP'))paused=!paused;tap.clear();min+=dt*8;if(min>=1320)nextDay();updateZoo(dt);let mx=(p1.x+p2.x)/2,my=(p1.y+p2.y)/2;cam.x=clamp(mx-W/2,0,MW-W);cam.y=clamp(my-H/2,0,MH-H);for(let i=particles.length-1;i>=0;i--){let q=particles[i];q.life-=dt;q.x+=q.vx*dt;q.y+=q.vy*dt;if(q.life<=0)particles.splice(i,1)}if(msgT>0&&(msgT-=dt)<=0)toast.style.opacity=0}draw();hud();requestAnimationFrame(frame)}"""
+          if old_frame not in s:
+              raise SystemExit('frame antigo nao encontrado')
+          s=s.replace(old_frame,new_frame)
+          p.write_text(s,encoding='utf-8')
+
+          idx=Path('index.html')
+          h=idx.read_text(encoding='utf-8')
+          h=re.sub(r'src="game\\.js(?:\\?v=\\d+)?"','src="game.js?v=5"',h)
+          h=h.replace('Controles/gamepads comuns também são detectados automaticamente.','Co-op simultâneo: teclado para os dois; com 1 controle ele assume Yasmim; com 2 controles, um para cada jogador.')
+          idx.write_text(h,encoding='utf-8')
+          PY
+
+      - name: Validar JavaScript
+        run: node --check game.js
+
+      - name: Publicar correcao
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add game.js index.html
+          git commit -m 'Corrige multiplayer local simultaneo' || exit 0
+          git push origin gh-pages
