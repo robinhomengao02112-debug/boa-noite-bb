@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#18271e">
+<title>Duas Raízes — Robson & Yasmim</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+<header>
+  <div class="brand">
+    <div><h1>Duas Raízes — Robson & Yasmim</h1><div class="sub">fazenda cooperativa local · ecossistema melhorado · mapa editável · animais · estações · clima</div></div>
+  </div>
+  <div class="actions">
+    <button id="saveBtn">💾 Salvar</button>
+    <button id="loadBtn">📂 Carregar</button>
+    <button id="buildBtn">🛠 Construir</button>
+    <button id="resetBtn" class="danger">↻ Novo jogo</button>
+  </div>
+</header>
+
+<div class="layout">
+  <section id="gameWrap">
+    <canvas id="game" width="1120" height="700" tabindex="0" aria-label="Duas Raízes"></canvas>
+    <div id="overlayHud">
+      <div class="hud robson" id="hud1"></div>
+      <div class="hud" id="hudWorld"></div>
+      <div class="hud yasmim" id="hud2"></div>
+    </div>
+    <div id="toast"></div>
+    <div id="start">
+      <div class="startCard">
+        <h2>🌾 Duas Raízes</h2>
+        <p>Robson e Yasmim recebem uma fazenda viva para transformar juntos. O terreno respeita água, caminhos, construções e espaços dos animais. Plantem, criem bichos, abram caminhos, façam lagos e personalizem quase toda a propriedade.</p>
+        <div class="legend">
+          <div><b>Robson</b><br><kbd>WASD</kbd> mover · <kbd>Q</kbd> ferramenta · <kbd>E</kbd> usar</div>
+          <div><b>Yasmim</b><br><kbd>Setas</kbd> mover · <kbd>Shift</kbd> ferramenta · <kbd>Enter</kbd> usar</div>
+        </div>
+        <button id="startBtn" class="primary">Começar a jogar</button>
+      </div>
+    </div>
+  </section>
+
+  <aside class="side">
+    <div class="panel">
+      <h2>🌱 Plantação selecionada</h2>
+      <select id="cropSelect" style="width:100%">
+        <option value="turnip">Nabo · 3 dias · $45</option>
+        <option value="carrot">Cenoura · 3 dias · $55</option>
+        <option value="strawberry">Morango · 4 dias · $85</option>
+        <option value="corn">Milho · 5 dias · $95</option>
+        <option value="pumpkin">Abóbora · 6 dias · $130</option>
+        <option value="blueberry">Mirtilo · 4 dias · $75</option>
+      </select>
+      <p>Sementes custam entre $6 e $18. Use a ferramenta <b>Sementes</b> na terra preparada.</p>
+    </div>
+
+    <div class="panel">
+      <h2>🐾 Animais <span class="badge">10 tipos</span></h2>
+      <div class="grid" id="animalShop"></div>
+      <p>Os animais produzem itens diariamente quando estão alimentados e felizes. Aproxime-se e use a ferramenta <b>Mãos</b> para cuidar/coletar.</p>
+    </div>
+
+    <div class="panel" id="buildPanel">
+      <h2>🛠 Editor da fazenda</h2>
+      <p>Ative <b>Construir</b>, selecione algo e clique no mapa. Você pode alterar quase toda a fazenda.</p>
+      <div class="grid" id="buildGrid"></div>
+      <div class="row" style="margin-top:8px">
+        <button id="eraseBtn" class="itembtn">🧹 Remover</button>
+        <button id="paintBtn" class="itembtn">🎨 Terreno</button>
+      </div>
+      <select id="terrainSelect" style="width:100%;margin-top:7px">
+        <option value="grass">Grama</option>
+        <option value="dirt">Terra</option>
+        <option value="path">Caminho</option>
+        <option value="stone">Pedra</option>
+        <option value="sand">Areia</option>
+        <option value="water">Água</option>
+      </select>
+    </div>
+
+    <div class="panel">
+      <h2>🎮 Atalhos</h2>
+      <p><b>Ferramentas:</b> Enxada → Sementes → Regador → Mãos → Machado → Picareta</p>
+      <p><kbd>B</kbd> alterna construção · <kbd>F</kbd> alimenta animais próximos · <kbd>P</kbd> pausa</p>
+      <p class="small">Controles/gamepads comuns também são detectados automaticamente.</p>
+    </div>
+  </aside>
+</div>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
