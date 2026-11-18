@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#120d24">
+<meta name="description" content="Histórias interativas em que você é o protagonista. Grátis, sem anúncios, sem conta e offline.">
+<title>Enredo · Histórias Interativas</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<main id="view"></main>
+<nav id="tabs" aria-label="Navegação">
+  <button data-tab="inicio" class="on"><span>📚</span>Histórias</button>
+  <button data-tab="finais"><span>🏆</span>Finais</button>
+  <button data-tab="criar"><span>✍️</span>Criar</button>
+  <button data-tab="config"><span>⚙️</span>Ajustes</button>
+</nav>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="stories.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

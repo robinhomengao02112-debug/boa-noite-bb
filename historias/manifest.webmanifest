@@ -1,0 +1,13 @@
+{
+  "name": "Enredo · Histórias Interativas",
+  "short_name": "Enredo",
+  "description": "Histórias interativas em que você é o protagonista. Grátis, sem anúncios e offline.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#120d24",
+  "theme_color": "#120d24",
+  "lang": "pt-BR",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
