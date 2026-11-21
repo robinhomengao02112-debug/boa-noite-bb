@@ -1,0 +1,3 @@
+# Preserva CRLF e o BOM UTF-8 exatamente como estão (exigidos pelo Windows PowerShell 5.1 e pelo cmd.exe)
+*.ps1 -text
+*.bat -text
