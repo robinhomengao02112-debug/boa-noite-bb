@@ -709,12 +709,15 @@ function Get-OtzDiagnostics {
     $os   = Get-CimSafe 'Win32_OperatingSystem' | Select-Object -First 1
     $bios = Get-CimSafe 'Win32_BIOS' | Select-Object -First 1
     $prod = Get-CimSafe 'Win32_ComputerSystemProduct' | Select-Object -First 1
+    $modelText = '{0} {1} {2}' -f $prod.Version, $cs.SystemFamily, $cs.Model
+    $isIdea330 = ($modelText -match 'ideapad\s*330-')
 
     # ---------- SISTEMA ----------
     Add-Line '=============== SISTEMA ==============='
     Add-Line ('Fabricante/Modelo : {0} {1}' -f $cs.Manufacturer, $cs.Model)
     if ($prod -and $prod.Version -and $prod.Version -ne $cs.Model) { Add-Line ('Nome comercial    : {0}' -f $prod.Version) }
     Add-Line ('BIOS              : {0} ({1})' -f $bios.SMBIOSBIOSVersion, (Format-Date $bios.ReleaseDate))
+    if ($isIdea330) { Add-Line 'Perfil detectado  : Lenovo IdeaPad 330 — 4 GB soldados + 1 slot SO-DIMM, slot M.2 NVMe, 1 ventoinha' }
     Add-Line ('Windows           : {0} — build {1} ({2})' -f $os.Caption, $os.BuildNumber, $os.OSArchitecture)
     if ($os.LastBootUpTime) {
         $up = (Get-Date) - [datetime]$os.LastBootUpTime
@@ -815,7 +818,13 @@ function Get-OtzDiagnostics {
             $channel = 'DUAL-CHANNEL (provável)'
         } else {
             $channel = 'DUAL parcial (Flex Mode — pentes de tamanhos diferentes)'
-            Add-Rec 2 'Os pentes têm tamanhos diferentes: só parte da memória trabalha em dual-channel. Para o máximo, use dois pentes do mesmo tamanho (ex.: 2x 8 GB).'
+            $minCap = ($caps | Measure-Object -Minimum).Minimum
+            $maxCap = ($caps | Measure-Object -Maximum).Maximum
+            if ($isIdea330) {
+                Add-Rec 3 ('IdeaPad 330 com {0} + {1}: o Intel Flex Mode coloca {2} em dual-channel ({0} + {0}) e o restante em single-channel. MANTENHA assim: muita RAM evita travadas e a parte dual-channel atende a HD 620. Dual-channel completo exigiria trocar o pente por um do mesmo tamanho do soldado ({0}), reduzindo a RAM total — não compensa.' -f (Format-GB $minCap), (Format-GB $maxCap), (Format-GB (2 * $minCap)))
+            } else {
+                Add-Rec 2 'Os pentes têm tamanhos diferentes: só parte da memória trabalha em dual-channel. Para o máximo, use dois pentes do mesmo tamanho (ex.: 2x 8 GB).'
+            }
         }
     } elseif ($mods.Count -eq 1) {
         if ($isLp) {
@@ -826,6 +835,13 @@ function Get-OtzDiagnostics {
         }
     }
     Add-Line ('Modo dos canais   : {0}' -f $channel)
+    $usable = [double]$cs.TotalPhysicalMemory
+    if ($total -and $usable -gt 0) {
+        Add-Line ('Utilizável        : {0} (a GPU integrada pega uma parte dinamicamente, até metade)' -f (Format-GB $usable))
+        if (([double]$total - $usable) -gt 1.5GB) {
+            Add-Rec 2 ('O Windows está usando só {0} dos {1} instalados. Verifique em msconfig > Inicialização do sistema > Opções avançadas se "Memória máxima" está DESMARCADO e atualize a BIOS pelo Lenovo Vantage. (A Lenovo especifica 16 GB como máximo oficial do IdeaPad 330-15IKB; muitos reconhecem 20 GB, mas não é garantido.)' -f (Format-GB $usable), (Format-GB $total))
+        }
+    }
     $totalGB = [double]$total / 1GB
     if ($totalGB -lt 7.5) {
         Add-Rec 1 ('Apenas {0:N0} GB de RAM: a GPU integrada usa parte dela. 8 GB é o mínimo para jogos; 16 GB (2x 8 GB) é o ideal.' -f $totalGB)
@@ -863,7 +879,9 @@ function Get-OtzDiagnostics {
         }
     }
     if ($sysMedia -eq 'HDD') {
-        Add-Rec 1 'O Windows está em um HD mecânico (HDD). Trocar por um SSD é a melhoria de fluidez mais perceptível depois da RAM: o sistema e os jogos carregam muito mais rápido e as travadinhas de carregamento somem.'
+        $extra = ''
+        if ($isIdea330) { $extra = ' No IdeaPad 330 existe um slot M.2 2280 NVMe (PCIe) além da baia SATA de 2,5": um SSD NVMe M.2 2280 é a melhor escolha e o HD pode continuar como disco de arquivos (confira o slot na especificação PSREF do seu modelo, link na aba Jogos).' }
+        Add-Rec 1 ('O Windows está em um HD mecânico (HDD). Trocar por um SSD é a melhoria de fluidez mais perceptível: o sistema e os jogos carregam muito mais rápido e as travadinhas de carregamento somem.' + $extra)
     } elseif ($sysMedia -eq 'SSD') {
         Add-Line 'Windows em SSD: ótimo.'
     } else {
@@ -918,6 +936,14 @@ function Get-OtzDiagnostics {
         Add-Rec 2 ('{0} programas abrem junto com o Windows. Desative os que não usa sempre (botão "Gerenciar programas da inicialização" na aba Otimizações): libera RAM e CPU para os jogos.' -f $st.Count)
     }
 
+    if ($isIdea330) {
+        Add-Rec 2 'Lenovo Vantage (Microsoft Store, link na aba Jogos): use "Atualização do sistema" para instalar BIOS e drivers da Lenovo — sempre com o carregador ligado e sem interromper. Se o seu Vantage mostrar "Modo térmico" ou "Desempenho", escolha Desempenho para jogar.'
+        Add-Rec 3 'Se o notebook fica quase sempre na tomada, ative o "Modo de conservação" da bateria no Lenovo Vantage: preserva a bateria e não reduz o desempenho.'
+        Add-Rec 4 'O IdeaPad 330 tem uma única ventoinha: jogue sobre superfície firme (nunca cama ou colo), mantenha as saídas de ar livres e, se possível, use uma base com cooler.'
+        if ($igpu -and $igpu.CurrentHorizontalResolution -gt 0 -and $igpu.CurrentHorizontalResolution -lt 1920) {
+            Add-Rec 4 'Sua tela é HD (1366x768): jogue na resolução nativa 1366x768 (ou 1280x720 se precisar de mais FPS). Evite resoluções que não sejam desses tamanhos para a imagem não ficar borrada.'
+        }
+    }
     Add-Rec 4 'Manutenção física: em notebooks de 2017-2019, uma limpeza das ventoinhas e troca da pasta térmica costuma recuperar muito desempenho perdido por calor. Uma base com cooler também ajuda.'
     Add-Rec 4 'Para medir: rode o teste da aba "Testes" com o rótulo "Antes", aplique as otimizações, reinicie e rode de novo com o rótulo "Depois".'
 
@@ -1115,6 +1141,19 @@ JOGOS ESPECÍFICOS
    "Escala de resolução" 3/4 se precisar: mire 30 FPS travado.
  - Fortnite: modo "Desempenho", 720p, 3D 75%: 30-60 FPS.
  - Jogos DX9 antigos com problemas: experimente DXVK (experimental).
+
+SEU LENOVO IDEAPAD 330 (sem placa dedicada, 20 GB)
+ - RAM: 4 GB soldados + 16 GB no slot = Flex Mode (8 GB em
+   dual-channel + 12 GB em single). Mantenha: é a melhor
+   combinação de capacidade para esse modelo.
+ - Com 20 GB, a HD 620 pode usar até ~10 GB como memória de
+   vídeo: texturas no MÉDIO são seguras na maioria dos jogos.
+ - Tela HD (1366x768)? Jogue na nativa. Tela Full HD? 1280x720.
+ - Lenovo Vantage: atualize BIOS/drivers (com carregador) e,
+   se existir, escolha o modo térmico "Desempenho".
+ - HD mecânico? O 330 tem slot M.2 2280 NVMe: SSD NVMe nele.
+ - Uma ventoinha só: superfície firme, saídas livres, base
+   com cooler ajuda. Limpeza + pasta térmica se passar de 90 °C.
 
 EXPECTATIVA HONESTA
  - Jogos de 2020+ pesados (Warzone, CS2, AAA) ficam no limite ou
@@ -1366,6 +1405,9 @@ $xaml = @'
                   <WrapPanel x:Name="pnlLinks">
                     <Button Content="Driver Intel (7ª-10ª ger.)" Background="#374151" Tag="https://www.intel.com/content/www/us/en/download/776137/intel-7th-10th-gen-processor-graphics-windows.html"/>
                     <Button Content="Intel Driver Assistant" Background="#374151" Tag="https://www.intel.com/content/www/us/en/support/intel-driver-support-assistant.html"/>
+                    <Button Content="Lenovo Vantage (Store)" Background="#374151" Tag="https://apps.microsoft.com/detail/9wzdncrfj4mv"/>
+                    <Button Content="Especificação IdeaPad 330 (PSREF)" Background="#374151" Tag="https://psref.lenovo.com/syspool/Sys/PDF/IdeaPad/ideapad_330_15IKB/ideapad_330_15IKB_Spec.PDF"/>
+                    <Button Content="Suporte Lenovo (drivers/BIOS)" Background="#374151" Tag="https://pcsupport.lenovo.com/"/>
                     <Button Content="CPU-Z (ver dual-channel)" Background="#374151" Tag="https://www.cpuid.com/softwares/cpu-z.html"/>
                     <Button Content="HWiNFO (temperaturas)" Background="#374151" Tag="https://www.hwinfo.com/download/"/>
                     <Button Content="CrystalDiskInfo (saúde do disco)" Background="#374151" Tag="https://crystalmark.info/en/software/crystaldiskinfo/"/>

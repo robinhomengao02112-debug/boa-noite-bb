@@ -280,7 +280,54 @@ limpeza estão no topo da lista.
 
 ---
 
-## 12. Fontes
+## 12. O seu notebook: Lenovo IdeaPad 330, sem placa dedicada, 20 GB de RAM
+
+O IdeaPad 330 com HD 620 é o **330-15IKB** (ou 330-14IKB), com Core i3-7020U/7130U, i5-7200U ou
+i7-7500U (se for i5-8250U/i7-8550U, a GPU é a UHD 620 — mesma arquitetura, tudo abaixo vale igual).
+O app identifica o modelo exato automaticamente.
+
+### 12.1 Memória: por que você tem 20 GB e o que isso significa
+
+- A placa do 330-15IKB tem **4 GB DDR4 soldados** + **um único slot SO-DIMM**. Os seus 20 GB são
+  **4 GB soldados + um pente de 16 GB**.
+- Com pentes de tamanhos diferentes, o processador usa o **Intel Flex Mode**: **8 GB (4 + 4)
+  funcionam em dual-channel** e os **12 GB restantes em single-channel**.
+- **Recomendação: mantenha os 20 GB.** A única forma de ter dual-channel completo seria trocar o pente
+  de 16 GB por um de 4 GB (total 8 GB) — você ganharia um pouco de banda, mas perderia 12 GB de
+  capacidade, o que causa mais travadas com navegador/Discord abertos. Não compensa.
+- Com 20 GB, a HD 620 pode usar até cerca de **10 GB como memória de vídeo** (o Windows libera até
+  metade da RAM): **texturas no médio** são seguras na maioria dos jogos.
+- A memória roda a **2133 MHz** (limite da plataforma), mesmo que o pente seja de 2400/2666 — normal.
+- Observação: a ficha técnica da Lenovo cita **16 GB como máximo oficial**; muitos 330 reconhecem os
+  20 GB normalmente. O app compara RAM instalada × utilizável e avisa se o Windows não estiver usando
+  tudo.
+
+### 12.2 Armazenamento
+
+- A maioria dos 330-15IKB veio com **HD mecânico de 1 TB (5400 rpm)** — o maior causador de lentidão
+  nesse modelo.
+- A ficha técnica da Lenovo lista um **slot M.2 2280 PCIe NVMe** além da baia SATA de 2,5". O melhor
+  upgrade é um **SSD NVMe M.2 2280** para o Windows e os jogos, mantendo o HD para arquivos. O app
+  detecta se o Windows está em HDD ou SSD.
+
+### 12.3 Refrigeração e energia
+
+- **Uma única ventoinha** e dissipador simples: o modelo esquenta com facilidade. Superfície firme,
+  saídas de ar livres e base com cooler ajudam; limpeza + pasta térmica se passar de ~90 °C em jogo.
+- **Lenovo Vantage** (Microsoft Store): atualizações de BIOS e drivers da Lenovo (sempre com
+  carregador ligado). Se a sua versão mostrar **Modo térmico/Desempenho**, escolha *Desempenho* para
+  jogar. O **Modo de conservação** da bateria preserva a bateria quando o notebook vive na tomada,
+  sem reduzir desempenho.
+- **Na tomada sempre** para jogar: na bateria o 330 limita a CPU e a GPU.
+
+### 12.4 Tela
+
+- Tela **HD 1366×768**: jogue na resolução **nativa** (1366×768) ou em 1280×720 se precisar de mais FPS.
+- Tela **Full HD**: use 1280×720 em tela cheia.
+
+---
+
+## 13. Fontes
 
 - Intel — página de suporte e drivers da HD Graphics 620: <https://intel.com/content/www/us/en/support/products/96551.html>
 - Intel — Intel 7th–10th Gen Processor Graphics – Windows: <https://www.intel.com/content/www/us/en/download/776137/intel-7th-10th-gen-processor-graphics-windows.html>
@@ -294,3 +341,6 @@ limpeza estão no topo da lista.
 - Matt Gadient — upgrade de RAM na UHD 620: <https://mattgadient.com/faster-gaming-on-intel-uhd-620-kaby-lake-r-by-upgrading-ram>
 - LaptopMedia — single vs. dual-channel em jogos: <https://laptopmedia.com/highlights/the-bottleneck-effect-gaming-performance-with-single-vs-dual-channel-memory/>
 - UltrabookReview — single vs. dual-channel (10–25 % em vários jogos): <https://www.ultrabookreview.com/36308-single-dual-channel-ram-amd>
+- Lenovo PSREF — especificação do IdeaPad 330-15IKB: <https://psref.lenovo.com/syspool/Sys/PDF/IdeaPad/ideapad_330_15IKB/ideapad_330_15IKB_Spec.PDF>
+- Kingston — memória compatível com o IdeaPad 330-15IKB: <https://www.kingston.com/en/memory/search/model/102200/lenovo-ideapad-330-15ikb>
+- Crucial — upgrades compatíveis com o IdeaPad 330-15IKB: <https://crucial.com/compatible-upgrade-for/lenovo/ideapad-330-15ikb>

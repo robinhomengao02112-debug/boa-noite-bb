@@ -51,4 +51,8 @@ Requisitos: Windows 10 ou 11 (o PowerShell 5.1 já vem no Windows).
 5. **SSD** no lugar de HD mecânico.
 6. **Limpeza interna + pasta térmica** se o notebook esquenta.
 
+**Lenovo IdeaPad 330 (4 GB soldados + 16 GB = 20 GB):** o app reconhece o modelo e dá
+recomendações específicas (Flex Mode da RAM, slot M.2 NVMe, Lenovo Vantage, refrigeração, tela).
+Veja a seção 12 da pesquisa.
+
 Detalhes, números e fontes em [`PESQUISA.md`](PESQUISA.md).
