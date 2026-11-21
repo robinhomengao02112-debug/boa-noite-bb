@@ -1,0 +1,56 @@
+name: Buds Control PC (Windows)
+
+on:
+  push:
+    paths:
+      - 'pc-app/**'
+      - '.github/workflows/buds-pc.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: pc-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Compilar (exe único, sem precisar instalar .NET)
+        run: dotnet publish BudsControlPC/BudsControlPC.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:Version=1.0.${{ github.run_number }} -o publish
+
+      - name: Gerar instalador
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress; }
+          & $iscc /DAppVersion=1.0.${{ github.run_number }} installer.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Copy-Item publish\BudsControlPC.exe out\BudsControlPC-portatil.exe
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BudsControlPC
+          path: pc-app/out/*.exe
+
+      - name: Publicar release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: pc-v1.0.${{ github.run_number }}
+          name: Buds Control PC 1.0.${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          make_latest: false
+          body: |
+            **Buds Control PC** para Windows 10/11 (64 bits).
+            - **BudsControlPC-Setup.exe**: instalador (recomendado). Não precisa de administrador.
+            - **BudsControlPC-portatil.exe**: versão que roda sem instalar.
+
+            Se o Windows mostrar "O Windows protegeu o computador", clique em **Mais informações → Executar assim mesmo** (o app não tem assinatura digital paga).
+          files: pc-app/out/*.exe
