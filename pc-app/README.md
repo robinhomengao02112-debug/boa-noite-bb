@@ -16,7 +16,13 @@ Para que **Discord, OBS, jogos e Meet** recebam a voz tratada, instale o [VB-CAB
 No app, envie a voz para "CABLE Input"; nos outros apps, escolha "CABLE Output" como microfone.
 O botão "Usar como microfone padrão" faz essa troca no Windows automaticamente.
 
-## Fones Redmi Buds (pareados com o PC)
+## Fones Redmi Buds
+- **⚡ Conectar fones:** num clique, liga o áudio Bluetooth do Windows e o controle, sem abrir as configurações.
+- **📱 Passar para o celular:** solta os fones do PC para o celular pegar.
+- **➕ Parear fones novos:** busca e pareia dentro do app.
+- **Conexão automática:** quando os fones ligam perto do PC, o controle abre sozinho. Ao abrir o app, ele não "rouba" os fones do celular.
+- Os botões de conectar e passar para o celular também ficam no ícone da bandeja (perto do relógio).
+
 Bateria, modos de cancelamento de ruído e transparência, intensidade, Turbo ANC, EQ do fone, gestos, conexão dupla, detecção de uso e console do protocolo.
 
 ## Instalação

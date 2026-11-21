@@ -373,6 +373,70 @@ public sealed class BudsClient : IDisposable
         Notify();
     }
 
+    // ------------------------------------------------------------------ conexão em um clique
+
+    private BluetoothDevice? _watched;
+    /// <summary>Disparado quando o Windows conecta (true) ou desconecta (false) o fone.</summary>
+    public event Action<bool>? AclChanged;
+
+    /// <summary>Passa a acompanhar o fone: quando ele ligar perto do PC, o app fica sabendo.</summary>
+    public async Task WatchAsync(string deviceId)
+    {
+        try
+        {
+            if (_watched != null) { _watched.ConnectionStatusChanged -= OnAcl; _watched.Dispose(); }
+            _watched = await BluetoothDevice.FromIdAsync(deviceId);
+            if (_watched != null) _watched.ConnectionStatusChanged += OnAcl;
+        }
+        catch (Exception e) { Log($"Não consegui acompanhar o fone: {e.Message}"); }
+    }
+
+    private void OnAcl(BluetoothDevice d, object _)
+    {
+        bool on = d.ConnectionStatus == BluetoothConnectionStatus.Connected;
+        Log(on ? "Windows conectou o fone" : "Windows desconectou o fone");
+        AclChanged?.Invoke(on);
+    }
+
+    /// <summary>
+    /// Um clique: liga o áudio Bluetooth do fone no Windows (se estiver desligado),
+    /// espera ele conectar e abre o canal de controle.
+    /// </summary>
+    public async Task ConnectEverythingAsync(string deviceId)
+    {
+        if (State.Link is Link.Connecting or Link.Authenticating) return;
+        State.Status = "Ligando o áudio Bluetooth…";
+        State.Link = Link.Connecting;
+        Notify();
+
+        var mac = await BtAudio.MacOf(deviceId);
+        var dev = await BluetoothDevice.FromIdAsync(deviceId);
+        State.DeviceName = dev?.Name;
+
+        if (!await BtAudio.IsConnectedAsync(deviceId) && mac != null)
+        {
+            int n = await Task.Run(() => BtAudio.Send(mac, dev?.Name, connect: true, log: Log));
+            if (n == 0) Log("Nenhum endpoint de áudio respondeu; tentando abrir o controle direto (isso também acorda a conexão).");
+            for (int i = 0; i < 20 && !await BtAudio.IsConnectedAsync(deviceId); i++) await Task.Delay(400);
+        }
+        State.Link = Link.Disconnected;
+        await ConnectAsync(deviceId);
+    }
+
+    /// <summary>Solta o fone do PC (controle + áudio) para o celular poder pegar.</summary>
+    public async Task ReleaseAsync(string deviceId)
+    {
+        Disconnect();
+        var mac = await BtAudio.MacOf(deviceId);
+        var dev = await BluetoothDevice.FromIdAsync(deviceId);
+        if (mac != null)
+        {
+            int n = await Task.Run(() => BtAudio.Send(mac, dev?.Name, connect: false, log: Log));
+            State.Status = n > 0 ? "Áudio desligado do PC: o celular já pode conectar" : "Controle desconectado (o Windows não liberou o áudio)";
+            Notify();
+        }
+    }
+
     public void SendRaw(int op, byte[] payload) => Send(_cmd.Raw(op, payload), "manual");
 
     public void Turbo()
@@ -383,5 +447,9 @@ public sealed class BudsClient : IDisposable
         Log("Turbo: ANC ligado, adaptativo desligado, intensidade profunda");
     }
 
-    public void Dispose() => CloseSocket();
+    public void Dispose()
+    {
+        CloseSocket();
+        if (_watched != null) { _watched.ConnectionStatusChanged -= OnAcl; _watched.Dispose(); }
+    }
 }

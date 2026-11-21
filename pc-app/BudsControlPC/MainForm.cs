@@ -79,6 +79,8 @@ public sealed class MainForm : Form
         _trayMic = new ToolStripMenuItem("Processamento do microfone", null, (_, _) => _mic.SetPower(!_mic.Running));
         menu.Items.Add(_trayMic);
         menu.Items.Add(new ToolStripSeparator());
+        menu.Items.Add("⚡ Conectar fones", null, async (_, _) => await _budsPage.ConnectAsync());
+        menu.Items.Add("📱 Passar fones para o celular", null, async (_, _) => await _budsPage.ReleaseAsync());
         menu.Items.Add("Fones: cancelar ruído", null, (_, _) => _buds.SetAmbientMode(1));
         menu.Items.Add("Fones: transparência", null, (_, _) => _buds.SetAmbientMode(2));
         menu.Items.Add("Fones: desligado", null, (_, _) => _buds.SetAmbientMode(0));
@@ -173,7 +175,7 @@ public sealed class MainForm : Form
         if (_startMinimized) BeginInvoke(() => { Hide(); });
         if (_app.Mic.AutoStart) _mic.StartEngine();
         await _budsPage.LoadDevicesAsync();
-        if (_app.BudsAutoConnect && _app.BudsDeviceId != null) await _budsPage.ConnectAsync();
+        if (_app.BudsAutoConnect && _app.BudsDeviceId != null) await _budsPage.AutoConnectAsync();
     }
 
     private void ShowFromTray()

@@ -39,14 +39,25 @@ public sealed class BudsPage : FlowLayoutPanel
 
         // ---------------------------------------------------------------- conexão
         var conn = new CardPanel("Fones Redmi Buds",
-            "Os fones precisam estar pareados e conectados a este PC pelo Bluetooth do Windows. Feche o app Xiaomi Earbuds do celular enquanto usa.");
+            "Tudo por aqui: \"Conectar fones\" liga o áudio Bluetooth do Windows e o controle num clique, sem abrir as configurações. " +
+            "\"Passar para o celular\" solta os fones do PC. Fones novos podem ser pareados pelo botão \"Parear fones novos\".");
         _devices = Theme.Combo(360);
+        _devices.SelectedIndexChanged += async (_, _) =>
+        {
+            if (_devices.SelectedItem is not PairedDevice d) return;
+            if (_app.BudsDeviceId != d.Id) { _app.BudsDeviceId = d.Id; _app.Save(); }
+            await _buds.WatchAsync(d.Id);
+        };
         conn.Add(Theme.Row(Theme.Label("Fone:", width: 60), _devices,
             Theme.Button("Atualizar", async (_, _) => await LoadDevicesAsync()),
-            Theme.Button("Conectar", async (_, _) => await ConnectAsync(), primary: true),
-            Theme.Button("Desconectar", (_, _) => _buds.Disconnect())));
+            Theme.Button("➕ Parear fones novos…", async (_, _) => await PairNewAsync())));
+        var big = Theme.Button("⚡  Conectar fones", async (_, _) => await ConnectAsync(), primary: true, width: 220);
+        big.Height = 42;
+        var phone = Theme.Button("📱  Passar para o celular", async (_, _) => await ReleaseAsync(), width: 220);
+        phone.Height = 42;
+        conn.Add(Theme.Row(big, phone, Theme.Button("Desconectar controle", (_, _) => _buds.Disconnect())));
         _status = Theme.Label("Desconectado", color: Theme.Muted);
-        _autoConnect = Theme.Check("Conectar sozinho ao abrir o app", (_, _) => { if (!_sync) { _app.BudsAutoConnect = _autoConnect.Checked; _app.Save(); } });
+        _autoConnect = Theme.Check("Conectar sozinho (ao abrir o app e sempre que os fones ligarem perto do PC)", (_, _) => { if (!_sync) { _app.BudsAutoConnect = _autoConnect.Checked; _app.Save(); } });
         conn.Add(_status);
         conn.Add(_autoConnect);
         Controls.Add(conn);
@@ -164,6 +175,19 @@ public sealed class BudsPage : FlowLayoutPanel
         Controls.Add(raw);
 
         _buds.Changed += () => { if (IsHandleCreated) BeginInvoke(SyncFromState); };
+        // fone ligou perto do PC: abre o controle sozinho
+        _buds.AclChanged += on =>
+        {
+            if (!IsHandleCreated) return;
+            BeginInvoke(async () =>
+            {
+                if (on && _app.BudsAutoConnect && !_buds.IsConnected && _devices.SelectedItem is PairedDevice d)
+                {
+                    await Task.Delay(2500);
+                    if (!_buds.IsConnected) await _buds.ConnectAsync(d.Id);
+                }
+            });
+        };
         Resize += (_, _) =>
         {
             int w = Math.Max(600, ClientSize.Width - 30);
@@ -216,10 +240,32 @@ public sealed class BudsPage : FlowLayoutPanel
 
     public async Task ConnectAsync()
     {
-        if (_devices.SelectedItem is not PairedDevice d) { _status.Text = "Escolha os fones na lista."; return; }
+        if (_devices.SelectedItem is not PairedDevice d) { _status.Text = "Escolha os fones na lista (ou pareie fones novos)."; return; }
         _app.BudsDeviceId = d.Id;
         _app.Save();
-        await _buds.ConnectAsync(d.Id);
+        await _buds.ConnectEverythingAsync(d.Id);
+    }
+
+    /// <summary>Ao abrir o app: só pega o controle se o Windows já estiver com os fones (não rouba do celular).</summary>
+    public async Task AutoConnectAsync()
+    {
+        if (_devices.SelectedItem is PairedDevice d && await BtAudio.IsConnectedAsync(d.Id)) await _buds.ConnectAsync(d.Id);
+    }
+
+    public async Task ReleaseAsync()
+    {
+        if (_devices.SelectedItem is PairedDevice d) await _buds.ReleaseAsync(d.Id);
+    }
+
+    private async Task PairNewAsync()
+    {
+        using var dlg = new PairDialog();
+        if (dlg.ShowDialog(FindForm()) != DialogResult.OK) return;
+        await Task.Delay(1500); // o Windows leva um instante para registrar o aparelho
+        var before = _app.BudsDeviceId;
+        _app.BudsDeviceId = null;
+        await LoadDevicesAsync();
+        if (_devices.SelectedItem is PairedDevice d && d.Id != before) await ConnectAsync();
     }
 
     private static void Check(RadioButton r, bool v) { if (r.Checked != v) r.Checked = v; }
