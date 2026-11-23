@@ -59,7 +59,7 @@
 |---|---|---|
 | Idade mínima para LIVE | Guias citam 16 ou 18 | Vale a regra **oficial** em vigor: **18 anos ou mais** |
 | Seguidores mínimos no Brasil | Guias: 1.000. Oficial: "varia por país" | Planejar para cerca de 1.000 e conferir no app |
-| Duração máxima da live | Fontes dizem 60 min, sem limite ou 24/7 | Não há limite oficial publicado; o supervisor reconecta se a live cair |
+| Duração máxima da live | Fontes dizem 60 min, sem limite ou 24/7 | Não há limite oficial publicado; o controlador religa se a live cair |
 | Valor do diamante | US$ 0,005–0,007 | Usamos US$ 0,005 (conservador) |
 | Mínimo de saque | US$ 10 (PayPal), R$ 20–25, 50 diamantes… | Conferir no app |
 | Chave RTMP expira? | Um guia diz 2 h | **Testar** na sua conta |

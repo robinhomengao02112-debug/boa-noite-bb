@@ -30,7 +30,7 @@ Para o apresentador, a tarefa é simples: **ser a cara da live**. Ele não preci
 - **Custo extra:** pagamento dos apresentadores (ver arquivo 03 para o ponto de equilíbrio). **Risco:** baixo, desde que haja sempre alguém presente.
 
 ### Nível C — "24h sem ninguém" (não recomendado)
-- Tecnicamente o `starter/` roda assim. O supervisor mantém o jogo de pé 24h.
+- Tecnicamente o `starter/` roda assim. O controlador mantém o jogo e o OBS de pé 24h.
 - **Mas** é exatamente o caso que as regras de monetização descrevem, e o risco é perder os presentes de forma permanente.
 - Se mesmo assim quiser testar, faça **numa conta secundária, nunca na principal**, e acompanhe *LIVE Center › Restrictions*.
 
@@ -38,7 +38,7 @@ Para o apresentador, a tarefa é simples: **ser a cara da live**. Ele não preci
 
 ```
 07:50  Windows liga (BIOS "power on" programado ou PC sempre ligado)
-07:55  Agendador de Tarefas abre: supervisor do jogo (starter) + OBS (--startstreaming)
+07:55  O controlador (iniciado com o Windows) já está com o jogo e o OBS prontos → LIGAR no painel
 08:00  Apresentador do turno 1 abre o link do VDO.Ninja → aparece na cena
         … o jogo roda sozinho: rodadas de 4 min, intervalos de 20 s …
 12:00  Troca de turno (5 min de cena "intervalo" com o placar do dia)

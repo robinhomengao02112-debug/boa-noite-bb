@@ -1,70 +1,66 @@
-# Starter: motor de jogos interativos para TikTok LIVE
+# Starter: sistema da live automática (jogos + controlador + OBS + aprendizado)
 
-## Jogos incluídos (todos jogáveis)
-| id | Jogo | Estilo |
+> **Para instalar no Windows, use o `INSTALAR.bat` da pasta de cima e siga o `COMO-USAR.md`.** Este arquivo é a referência técnica.
+
+## Peças
+| Peça | Arquivo | O que faz |
 |---|---|---|
-| `chefao` | **Raid do Chefão**: o chat inteiro ataca um chefe, que fica mais forte a cada nível | Cooperativo |
-| `corrida` | **Corrida de Elementos**: 4 times correm; comentar 1–4 escolhe o time | Times |
-| `melancia` | **Estoura ou Não**: elásticos até estourar; o limite é escondido | Suspense |
+| **Controlador** | `src/controller.js` | O piloto automático. Mantém o jogo e o OBS de pé, configura o OBS, liga e desliga a transmissão, religa após quedas, desliga no horário marcado e serve o **painel** em `http://127.0.0.1:3001` |
+| Controle do OBS | `src/obs.js` | Fala com o OBS pelo obs-websocket: cria o perfil vertical, a cena e a fonte; define a chave; inicia e para; limpa a "marca de queda" para não abrir o Modo de Segurança |
+| Servidor do jogo | `src/server.js` | Lê os eventos da live, roda o jogo ativo, faz o rodízio (simples ou **inteligente**), registra a receita e o **aprendizado** |
+| Jogos | `src/games/*.js` + `public/<id>/` | `chefao`, `corrida`, `melancia` |
+| Fontes de eventos | `src/sources/tiktok.js`, `simulator.js` | Live real (`tiktok-live-connector` 2.5.0, só leitura) ou simulador |
+| Painel | `painel/index.html` | Botões LIGAR/DESLIGAR, chave, jogos, rodízio, aprendizado e registro |
+| Configuração inicial | `scripts/setup.js` | Usuário, senha do obs-websocket e opções do OBS que evitam janelas travando |
+| Windows | `scripts/instalar.ps1`, `iniciar-oculto.vbs`, `ligar.bat`, `desligar.bat`, `parar-tudo.bat`, `simular-windows.bat` | Instalação, início escondido e atalhos |
 
-As fichas de cada jogo e de mais 42 ideias estão em `../10-catalogo-de-jogos.md`.
-
-## O que o motor faz
-- Conecta na sua live (`tiktok-live-connector` 2.5.0) e **só lê** os eventos: presentes, comentários, curtidas, seguidas, compartilhamentos e entradas.
-- Conta presentes em combo do jeito certo (só o evento final, com `repeatEnd`).
-- Faz **rodízio automático** entre jogos (sempre entre rodadas) **sem mudar a URL do OBS**: `http://localhost:3000/` sempre mostra o jogo ativo.
-- **Simulador** para testar sem estar ao vivo.
-- **Receita estimada** por dia, **por jogo** e **por hora**: `GET /api/stats`.
-- Página de saúde em `GET /health`. O **supervisor** reinicia o servidor se cair ou travar.
-
-## Como rodar (Windows)
-1. Instale o **Node.js 20 ou mais novo** (LTS) em nodejs.org.
-2. Em `config.json`, troque `SEU_USUARIO_AQUI` pelo seu @ (sem o @).
-3. **Teste sem live:** `scripts\simular-windows.bat`.
-4. **Ao vivo:** comece a live e depois rode `scripts\iniciar-windows.bat`.
-5. No OBS ou LIVE Studio: **Fonte de navegador** → `http://localhost:3000/`, 1080x1920.
-
-Pelo terminal:
+## Comandos (terminal)
 ```bash
-npm install
-npm run sim                                  # simulador com o jogo de config.json
-node src/server.js --simulate --game=melancia  # simulador com um jogo específico
-npm start                                    # conexão real
-npm run supervisor                           # conexão real com auto-reinício
+npm ci --omit=dev
+node scripts/setup.js --user=seu_usuario   # com o OBS FECHADO
+npm run controlador                        # piloto automático + painel (http://127.0.0.1:3001)
+npm run controlador:sim                    # o mesmo, com eventos simulados
+npm run sim                                # só o jogo, simulado (http://127.0.0.1:3000)
 ```
 
-**Trocar de jogo na hora** (só pelo próprio PC): abra `http://localhost:3000/api/game/corrida`, `/api/game/chefao` ou `/api/game/melancia`.
+## API do painel (local, 127.0.0.1:3001)
+| Método | Rota | Corpo |
+|---|---|---|
+| GET | `/api/status` | — |
+| POST | `/api/ligar` | `{ server?, key?, autoStopAt? "HH:MM" }` (vazio = usa a última chave) |
+| POST | `/api/desligar` | — |
+| POST | `/api/modo` | `{ mode: "obs" \| "studio" }` |
+| POST | `/api/jogo` | `{ id }` |
+| POST | `/api/config` | `{ user?, activeGame?, rotationEnabled?, smart?, minutesPerGame? }` |
+
+Servidor do jogo (127.0.0.1:3000): `/health`, `/api/stats?day=`, `/api/aprendizado`, `/api/game/:id`.
 
 ## config.json
 | Campo | Para que serve |
 |---|---|
-| `activeGame` | Jogo inicial |
-| `rotation.enabled / games / minutesPerGame` | Rodízio automático entre jogos |
-| `games.corrida` | Times, duração, pontos e efeitos por presente (nome exato do presente → `boost`, `shield`, `freeze_leader`, `mega`) |
-| `games.chefao` | Vida inicial, crescimento por nível, dano por ação, faixas de presente (Ataque/Raio/Meteoro/ULTIMATE), lista de chefes |
-| `games.melancia` | Faixa do limite escondido, elásticos por ação, objetos |
-| `eulerApiKey` | Chave grátis da Euler Stream (opcional; aumenta os limites) |
-| `estimatedUsdPerDiamond` | Taxa da estimativa de receita (padrão 0,005) |
+| `tiktokUsername` | Seu @ (sem @) |
+| `obs.*` | Porta e senha do websocket (preenchidas pelo setup), nomes de perfil, coleção, cena e fonte, resolução (base 1080x1920, saída 720x1280, 30 fps), bitrate, `browserHwAccel` (padrão `false` = sem tela preta) |
+| `rotation.enabled / smart / minutesPerGame` | Rodízio ligado, inteligente (aprende) ou em ordem, e minutos por jogo |
+| `rotation.learnMinMinutes / exploreChance` | Minutos mínimos de teste por jogo antes de comparar (30), e chance de testar um jogo qualquer (0,2) |
+| `games.<id>` | Ajustes de cada jogo |
 
-## Estrutura
-```
-src/server.js            servidor, rodízio, registro de receita, saúde
-src/games/index.js       registro dos jogos
-src/games/<id>.js        regras de cada jogo
-src/sources/tiktok.js    conexão real com a live
-src/sources/simulator.js eventos falsos para teste
-public/<id>/index.html   overlay de cada jogo
-public/shared/client.js  código comum dos overlays (troca automática de jogo, status)
-scripts/supervisor.js    vigia 24h
-scripts/*.bat            atalhos para Windows
-```
+## O que foi testado (OBS Studio 32.2 real, Linux, tela virtual)
+- Configuração do zero: `setup.js` → controlador → OBS abre **sem assistente e sem nenhuma janela**, e cria o perfil, a cena e a fonte sozinho.
+- LIGAR pelo painel → transmissão RTMP recebida (H.264 720x1280, 30 fps, AAC, **0 quadros perdidos**) com o jogo visível no vídeo.
+- OBS derrubado no meio da live → reaberto **sem a janela de Modo de Segurança** → de volta ao ar em cerca de 20 s.
+- Jogo derrubado → reiniciado. "PC reiniciado" (tudo derrubado) → controlador voltou ao ar sozinho.
+- DESLIGAR e desligamento por horário.
+- Segundo controlador aberto por engano → sai sem atrapalhar.
+- Rodízio inteligente → testa todos os jogos e depois prioriza os de mais moedas por minuto.
+
+**Não testado aqui:** o Windows em si (os scripts `.ps1`, `.bat` e `.vbs`) e a chave real do TikTok. Os pontos que dependem do Windows estão marcados no `COMO-USAR.md`.
 
 ## Criar um jogo novo
-1. Crie `src/games/<id>.js` com uma classe que tenha `static id`, `constructor(cfg)`, `publicConfig()`, `handle(ev)` (que devolve um efeito ou `null`), `tick(dt)` e `snapshot()`. O campo `phase` do snapshot deve ser `intermission`, `defeated` ou `exploded` entre rodadas, para o rodízio saber quando pode trocar.
-2. Crie `public/<id>/index.html` incluindo `/socket.io/socket.io.js` e `/shared/client.js`.
-3. Adicione `games.<id>` em `config.json` e registre o jogo em `src/games/index.js`.
+1. `src/games/<id>.js` com `static id`, `constructor(cfg)`, `publicConfig()`, `handle(ev)` (devolve um efeito ou `null`), `tick(dt)` e `snapshot()`. O `phase` do snapshot deve ser `intermission`, `defeated` ou `exploded` entre rodadas, para o rodízio saber quando trocar.
+2. `public/<id>/index.html` incluindo `/socket.io/socket.io.js` e `/shared/client.js`.
+3. Registre em `src/games/index.js` e adicione `games.<id>` no `config.json` e em `rotation.games`.
 
-Formato dos eventos que chegam em `handle(ev)`:
+Formato dos eventos:
 ```js
 { type: 'gift',   user: { id, nick, avatar }, giftName, diamonds, count, totalDiamonds }
 { type: 'chat',   user, text }

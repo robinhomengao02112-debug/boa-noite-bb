@@ -7,6 +7,8 @@ Quando uma informação vem só de sites de terceiros (e não do TikTok), isso e
 
 | Arquivo | O que tem |
 |---|---|
+| **[`COMO-USAR.md`](COMO-USAR.md)** | **Comece aqui:** instalar no seu PC com dois cliques e usar no dia a dia. |
+| **`INSTALAR.bat`** | O instalador. Dois cliques e ele faz tudo. |
 | [`01-regras-oficiais-e-riscos.md`](01-regras-oficiais-e-riscos.md) | As regras do próprio TikTok que decidem se a live ganha dinheiro ou não. **Leia primeiro.** |
 | [`02-modelo-de-operacao-24h.md`](02-modelo-de-operacao-24h.md) | Como rodar o dia inteiro: o que a máquina faz sozinha e onde precisa de alguém. |
 | [`03-dinheiro-e-economia-dos-presentes.md`](03-dinheiro-e-economia-dos-presentes.md) | Quanto vale cada presente, quanto o TikTok fica, saque no Brasil, contas de lucro e custos. |
@@ -17,7 +19,7 @@ Quando uma informação vem só de sites de terceiros (e não do TikTok), isso e
 | [`08-fontes.md`](08-fontes.md) | Todas as fontes, separadas entre oficiais e de terceiros. |
 | [`09-ficha-do-seu-jogo.md`](09-ficha-do-seu-jogo.md) | Um modelo para você descrever o jogo que já tem em mente; eu implemento a partir dele. |
 | [`10-catalogo-de-jogos.md`](10-catalogo-de-jogos.md) | **Catálogo com 45 ideias em 8 estilos**, cada uma numa ficha pronta para implementar, mais a ficha detalhada da **Fazenda da Live** e a ordem recomendada de desenvolvimento. |
-| [`starter/`](starter/) | **Motor com 3 jogos jogáveis** (Raid do Chefão, Corrida de Elementos, Estoura ou Não), rodízio automático entre jogos, conexão com a live, overlay para OBS, simulador, receita por jogo e por hora, e um supervisor que reinicia sozinho. |
+| [`starter/`](starter/) | **Motor com 3 jogos jogáveis** (Raid do Chefão, Corrida de Elementos, Estoura ou Não), rodízio automático entre jogos, conexão com a live, overlay para OBS, simulador, receita por jogo e por hora, **controlador 24h com painel, OBS configurado sozinho e aprendizado automático** do que rende mais. |
 
 ---
 
@@ -73,4 +75,6 @@ O arquivo 02 traz o desenho completo. Em resumo:
 - [x] Protótipo funcional (`starter/`), testado no simulador sem erros
 - [x] Catálogo com 45 ideias formatadas (`10-catalogo-de-jogos.md`)
 - [x] Motor com vários jogos + rodízio: Chefão, Corrida e Estoura ou Não, todos testados
-- [ ] **Próximo passo:** escolher o próximo jogo (sugestão: Fazenda da Live ou o seu jogo pela ficha 09)
+- [x] Piloto automático: instalador de um clique, controlador 24h, OBS configurado sozinho, painel LIGAR/DESLIGAR, religamento após quedas, desligamento por horário
+- [x] Aprendizado automático: rodízio inteligente que dá mais tempo aos jogos que rendem mais
+- [ ] **Próximo passo:** instalar no seu PC (`INSTALAR.bat`) e fazer a primeira live real

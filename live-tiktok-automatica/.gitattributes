@@ -1,0 +1,4 @@
+# Arquivos do Windows: guardados exatamente como estao (CRLF), sem conversao
+*.bat -text
+*.ps1 -text
+*.vbs -text

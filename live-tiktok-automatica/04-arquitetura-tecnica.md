@@ -32,7 +32,7 @@
 | Transmissão | **TikTok LIVE Studio** (oficial) ou **OBS Studio** com chave RTMP | O LIVE Studio é o caminho oficial e aceita fonte de navegador. O OBS dá mais controle e automação (linha de comando + obs-websocket), mas exige uma **chave de transmissão**, que nem toda conta tem. Um guia de terceiros diz que a chave pode expirar, então **teste**. |
 | Alertas sem código (opcional) | **TikFinity** | Alertas, TTS, metas, "Actions & Events", simulação de teclas para controlar jogos do Windows com presentes, integração com Minecraft e Streamer.bot. |
 | Apresentador remoto | **VDO.Ninja** | Webcam do apresentador → seu OBS, gratuito e com baixa latência. |
-| Vigia | **`scripts/supervisor.js`** (incluído) | Reinicia o servidor se cair ou travar e avisa se a live ficar sem eventos por mais de 15 minutos. |
+| Piloto automático | **`src/controller.js`** (incluído) | Mantém o jogo e o OBS de pé, configura o OBS sozinho, liga e desliga a transmissão, religa após quedas e tem painel em `http://127.0.0.1:3001`. |
 
 ## 4.3 Detalhes importantes da biblioteca (já tratados no protótipo)
 - **Presentes em sequência (combo):** presentes com `giftType === 1` chegam várias vezes durante o combo e uma última vez com `repeatEnd`. **Só o último evento deve contar**, senão o mesmo presente é contado em dobro. Está tratado em `starter/src/sources/tiktok.js`.
@@ -46,12 +46,14 @@
 - **Bitrate:** **CBR** de 3.000–6.000 kbps. Use no máximo cerca de 50–60% do seu upload real.
 - **Encoder:** NVENC (placa NVIDIA) ou AMF/QuickSync. Evite x264 no processador num PC que fica 24h ligado.
 - **Keyframe:** 2 s.
-- **Cena "Jogo":** Fonte de navegador `http://localhost:3000/` (1080x1920) + webcam/VDO.Ninja num canto + alertas do TikFinity.
+- **Cena "Jogo":** Fonte de navegador `http://127.0.0.1:3000/` (criada automaticamente pelo controlador) (1080x1920) + webcam/VDO.Ninja num canto + alertas do TikFinity.
 - **Cena "Intervalo":** placar do dia + "voltamos já". Use por **poucos minutos**, nunca como tela parada por horas.
 - **Replay Buffer** ligado e um atalho para salvar os melhores momentos, que viram cortes para vídeos.
 
 ## 4.5 Automação de ligar e desligar (Windows)
-1. **Servidor do jogo:** `starter/scripts/iniciar-windows.bat` (instala dependências e roda o supervisor). Coloque um atalho em `shell:startup` ou crie uma tarefa no **Agendador de Tarefas** com o gatilho "ao fazer logon" ou num horário fixo.
+> **Já implementado:** o `INSTALAR.bat` faz tudo isto sozinho (ver `COMO-USAR.md`). Os itens abaixo explicam como funciona.
+
+1. **Controlador:** inicia escondido com o Windows (atalho na pasta Inicializar) e sobe o servidor do jogo.
 2. **OBS começando a transmitir sozinho:** `obs64.exe --startstreaming --scene "Jogo" --minimize-to-tray` (opções oficiais de linha de comando do OBS). Agende num horário fixo.
 3. **Parar a transmissão num horário:** use o **obs-websocket**, que já vem no OBS 28 ou mais novo (Ferramentas → Configurações do WebSocket). Por script: `obs-websocket-js` 5.0.8 com a chamada `StopStream`. Também dá para agendar uma tarefa que fecha o OBS.
 4. **Se usar o LIVE Studio em vez do OBS:** ele não tem linha de comando documentada. A automação fica no jogo e nos alertas, e o início e o fim são feitos pelo apresentador ou por você. É uma troca: o LIVE Studio é oficial, mas automatiza menos.
@@ -68,8 +70,8 @@
 | Windows | — | Suspensão desligada; "Horário ativo" do Windows Update fora do horário da live; driver de vídeo atualizado |
 
 ## 4.7 Monitoramento
-- `http://localhost:3000/health` mostra se está conectado, há quanto tempo está sem eventos, o número de reinícios e o tempo ligado.
-- `http://localhost:3000/api/stats` mostra os presentes do dia, as moedas, a receita estimada em US$ e quantas pessoas diferentes deram presente. `?day=AAAA-MM-DD` mostra outro dia.
+- `http://127.0.0.1:3000/health` mostra se está conectado, há quanto tempo está sem eventos, o número de reinícios e o tempo ligado.
+- `http://127.0.0.1:3000/api/stats` mostra os presentes do dia, as moedas, a receita estimada em US$ e quantas pessoas diferentes deram presente. `?day=AAAA-MM-DD` mostra outro dia.
 - `starter/data/ledger-AAAA-MM-DD.jsonl` tem uma linha por presente, a base para saber **quais horários e quais presentes pagam**.
-- `starter/data/supervisor.log` registra quedas e reinícios.
+- `data/controlador.log` registra quedas, reinícios e cada liga/desliga. `data/aprendizado.json` guarda quanto cada jogo rende por minuto.
 - **Próxima evolução sugerida:** alerta no celular (Telegram ou e-mail) quando a live cair ou ficar parada.

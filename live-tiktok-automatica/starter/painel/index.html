@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel da Live</title>
+<style>
+  :root { --bg:#0f1117; --card:#181b24; --line:#2a2f3d; --text:#eef1f8; --muted:#8f97ad; --on:#19c37d; --off:#e5484d; --warn:#f5a524; --accent:#4f7cff; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:16px/1.45 system-ui,"Segoe UI",Roboto,sans-serif; }
+  main { max-width:980px; margin:0 auto; padding:20px 16px 60px; }
+  h1 { font-size:24px; margin:4px 0 16px; display:flex; align-items:center; gap:12px; }
+  .pill { font-size:13px; font-weight:700; padding:4px 10px; border-radius:99px; background:#333; }
+  .pill.on { background:var(--on); color:#03140c; } .pill.off { background:#3a3f4e; } .pill.warn { background:var(--warn); color:#1b1200; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 16px; }
+  .card h2 { font-size:13px; font-weight:600; color:var(--muted); margin:0 0 6px; text-transform:uppercase; letter-spacing:.04em; }
+  .big { font-size:22px; font-weight:700; }
+  .muted { color:var(--muted); font-size:14px; }
+  .controls { display:flex; gap:12px; flex-wrap:wrap; margin:16px 0; }
+  button { font:inherit; font-weight:700; border:0; border-radius:12px; padding:14px 22px; cursor:pointer; color:#fff; background:#2c3142; }
+  button.go { background:var(--on); color:#03140c; font-size:20px; padding:16px 34px; }
+  button.stop { background:var(--off); font-size:20px; padding:16px 34px; }
+  button.small { padding:9px 14px; font-size:14px; }
+  button:disabled { opacity:.5; cursor:default; }
+  label { display:block; font-size:14px; color:var(--muted); margin:10px 0 4px; }
+  input, select { width:100%; font:inherit; color:var(--text); background:#0f1219; border:1px solid var(--line); border-radius:10px; padding:10px 12px; }
+  .row { display:flex; gap:12px; flex-wrap:wrap; } .row > * { flex:1; min-width:200px; }
+  .msg { margin-top:10px; padding:12px 14px; border-radius:10px; background:#1d2230; border-left:4px solid var(--accent); }
+  .msg.err { border-left-color:var(--off); } .msg.ok { border-left-color:var(--on); }
+  pre { white-space:pre-wrap; font-size:12.5px; color:#b9c0d4; background:#0b0d13; border-radius:10px; padding:12px; max-height:280px; overflow:auto; margin:0; }
+  details summary { cursor:pointer; color:var(--muted); margin:6px 0; }
+  ol { padding-left:20px; } li { margin:4px 0; }
+  a { color:#8fb0ff; }
+</style>
+</head>
+<body>
+<main>
+  <h1>🎮 Painel da Live <span class="pill" id="pill">…</span></h1>
+
+  <div class="controls">
+    <button class="go" id="btnOn">▶ LIGAR LIVE</button>
+    <button class="stop" id="btnOff">■ DESLIGAR LIVE</button>
+  </div>
+  <div class="msg" id="msg">Carregando…</div>
+
+  <div class="grid" style="margin-top:14px">
+    <div class="card"><h2>Transmissão</h2><div class="big" id="sStream">—</div><div class="muted" id="sStreamInfo"></div></div>
+    <div class="card"><h2>Jogo</h2><div class="big" id="sGame">—</div><div class="muted" id="sGameInfo"></div></div>
+    <div class="card"><h2>Conexão com o TikTok</h2><div class="big" id="sTik">—</div><div class="muted" id="sTikInfo"></div></div>
+    <div class="card"><h2>Hoje (estimado)</h2><div class="big" id="sMoney">—</div><div class="muted" id="sMoneyInfo"></div></div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h2>Chave da live (OBS)</h2>
+    <div class="muted">A chave do TikTok <b>muda a cada live</b>. Pegue em <b>TikTok LIVE Center → LIVE Producer</b>, cole aqui e clique em LIGAR. O resto é automático.</div>
+    <div class="row">
+      <div><label>Servidor (Server URL)</label><input id="server" placeholder="rtmp://…" autocomplete="off"></div>
+      <div><label>Chave (Stream Key)</label><input id="key" type="password" placeholder="(guardada)" autocomplete="off"></div>
+    </div>
+    <div class="row">
+      <div><label>Desligar sozinho às (opcional)</label><input id="autoStop" type="time"></div>
+      <div><label>Modo</label>
+        <select id="mode"><option value="obs">OBS (automático, com chave)</option><option value="studio">TikTok LIVE Studio (sem chave)</option></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h2>Jogos</h2>
+    <div class="row">
+      <div><label>Usuário do TikTok (sem @)</label><input id="user"></div>
+      <div><label>Jogo agora</label><select id="game"></select></div>
+    </div>
+    <div class="row">
+      <div><label>Rodízio automático de jogos</label><select id="rot"><option value="true">Ligado</option><option value="false">Desligado</option></select></div>
+      <div><label>Tipo de rodízio</label><select id="smart"><option value="true">Inteligente (aprende o que rende mais)</option><option value="false">Em ordem</option></select></div>
+      <div><label>Minutos por jogo</label><input id="rotMin" type="number" min="1"></div>
+    </div>
+    <div class="controls"><button class="small" id="btnGame">Trocar jogo agora</button><button class="small" id="btnSave">Salvar usuário/rodízio</button></div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h2>Aprendizado automático</h2>
+    <div class="muted" id="learnInfo">O sistema mede quanto cada jogo rende por minuto durante as lives reais e dá mais tempo de tela aos melhores, sem parar de testar os outros.</div>
+    <table id="learn" style="width:100%;border-collapse:collapse;margin-top:8px;font-size:15px"></table>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <details><summary>Como usar com o TikTok LIVE Studio (sem chave)</summary>
+      <ol>
+        <li>No painel, escolha o modo <b>TikTok LIVE Studio</b>.</li>
+        <li>No LIVE Studio: <b>Adicionar fonte → Link/Navegador</b> com o endereço <code id="ovUrl"></code>, tamanho 1080 x 1920. Só precisa fazer isso uma vez.</li>
+        <li>Clique em <b>Go LIVE</b> no LIVE Studio. O jogo conecta sozinho em até 1 minuto.</li>
+      </ol>
+    </details>
+    <details><summary>Registro (últimos eventos)</summary><pre id="log"></pre></details>
+  </div>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const post = (url, body) => fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body||{}) }).then(r => r.json());
+let loaded = false;
+
+async function refresh() {
+  let s;
+  try { s = await fetch('/api/status').then(r => r.json()); }
+  catch { $('msg').textContent = 'Controlador fora do ar. Abra "Iniciar Live (controlador)".'; $('msg').className = 'msg err'; return; }
+  const live = s.stream.streaming;
+  const pill = $('pill');
+  pill.textContent = live ? 'AO VIVO' : (s.wantLive ? 'LIGANDO…' : 'DESLIGADA');
+  pill.className = 'pill ' + (live ? 'on' : (s.wantLive ? 'warn' : 'off'));
+  $('msg').textContent = s.stream.message || '—';
+  $('msg').className = 'msg ' + (live ? 'ok' : (s.stream.failures >= 3 ? 'err' : ''));
+  $('sStream').textContent = s.mode === 'studio' ? 'LIVE Studio' : (live ? 'No ar' : (s.stream.connected ? 'OBS pronto' : 'OBS abrindo…'));
+  $('sStreamInfo').textContent = live ? `tempo: ${s.stream.timecode || ''}` + (s.stopAtTs ? ` · desliga às ${s.autoStopAt}` : '') : (s.stream.error || '');
+  const h = s.game.health;
+  $('sGame').textContent = h ? h.game : (s.game.running ? 'iniciando…' : 'parado');
+  $('sGameInfo').textContent = `reinícios: ${s.game.restarts}` + (s.config.rotation.enabled ? ` · rodízio a cada ${s.config.rotation.minutesPerGame} min` : '');
+  $('sTik').textContent = h ? (h.connected ? 'Conectado' : 'Aguardando live') : '—';
+  $('sTikInfo').textContent = `@${s.config.user}` + (h && h.mode === 'simulator' ? ' · SIMULADOR' : '');
+  if (s.stats) {
+    $('sMoney').textContent = `US$ ${s.stats.estUsd.toFixed(2)}`;
+    $('sMoneyInfo').textContent = `${s.stats.diamonds} moedas · ${s.stats.gifts} presentes · ${s.stats.uniqueGifters} pessoas`;
+  }
+  if (s.learning) {
+    const best = [...s.learning.table].sort((a, b) => b.coinsPerMin - a.coinsPerMin)[0];
+    const td = 'style="padding:6px 8px;border-bottom:1px solid #2a2f3d"';
+    $('learn').innerHTML = `<tr><th ${td} align="left">Jogo</th><th ${td} align="right">Minutos no ar</th><th ${td} align="right">Moedas</th><th ${td} align="right">Moedas/min</th></tr>` +
+      s.learning.table.map(t => `<tr><td ${td}>${t.id}${t.id === s.learning.current ? ' ▶' : ''}${best && t.id === best.id && t.coinsPerMin > 0 ? ' 🏆' : ''}</td><td ${td} align="right">${t.minutes}</td><td ${td} align="right">${t.coins}</td><td ${td} align="right">${t.coinsPerMin}</td></tr>`).join('');
+  }
+  $('log').textContent = s.log.join('\n');
+  $('ovUrl').textContent = s.config.overlayUrl;
+  $('btnOn').disabled = s.wantLive; $('btnOff').disabled = !s.wantLive;
+  if (!loaded) {
+    loaded = true;
+    $('server').value = s.server || '';
+    $('key').placeholder = s.hasKey ? '(chave guardada — cole uma nova para trocar)' : 'cole a chave aqui';
+    $('autoStop').value = s.autoStopAt || '';
+    $('mode').value = s.mode;
+    $('user').value = s.config.user;
+    $('game').innerHTML = s.config.games.map(g => `<option value="${g}">${g}</option>`).join('');
+    $('game').value = h ? h.game : s.config.activeGame;
+    $('rot').value = String(s.config.rotation.enabled);
+    $('rotMin').value = s.config.rotation.minutesPerGame;
+    $('smart').value = String(s.config.rotation.smart !== false);
+  }
+}
+
+$('btnOn').onclick = async () => {
+  await post('/api/modo', { mode: $('mode').value });
+  await post('/api/ligar', { server: $('server').value, key: $('key').value, autoStopAt: $('autoStop').value });
+  $('key').value = ''; loaded = false; refresh();
+};
+$('btnOff').onclick = async () => { await post('/api/desligar'); refresh(); };
+$('mode').onchange = () => post('/api/modo', { mode: $('mode').value }).then(refresh);
+$('btnGame').onclick = () => post('/api/jogo', { id: $('game').value }).then(refresh);
+$('btnSave').onclick = () => post('/api/config', { user: $('user').value, rotationEnabled: $('rot').value === 'true', smart: $('smart').value === 'true', minutesPerGame: Number($('rotMin').value) }).then(() => { loaded = false; refresh(); });
+
+refresh(); setInterval(refresh, 3000);
+</script>
+</body>
+</html>

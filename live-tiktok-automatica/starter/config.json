@@ -3,77 +3,192 @@
   "eulerApiKey": "",
   "port": 3000,
   "estimatedUsdPerDiamond": 0.005,
-
+  "panelPort": 3001,
+  "obs": {
+    "enabled": true,
+    "path": "",
+    "port": 4455,
+    "password": "",
+    "profile": "LiveTikTok",
+    "collection": "LiveTikTok",
+    "scene": "Jogo",
+    "inputName": "Jogo (overlay)",
+    "video": {
+      "baseWidth": 1080,
+      "baseHeight": 1920,
+      "outputWidth": 720,
+      "outputHeight": 1280,
+      "fps": 30
+    },
+    "videoBitrate": 3000,
+    "audioBitrate": 128,
+    "browserHwAccel": false
+  },
   "activeGame": "chefao",
   "rotation": {
-    "enabled": false,
-    "games": ["chefao", "corrida", "melancia"],
-    "minutesPerGame": 30
+    "enabled": true,
+    "smart": true,
+    "games": [
+      "chefao",
+      "corrida",
+      "melancia"
+    ],
+    "minutesPerGame": 30,
+    "learnMinMinutes": 30,
+    "exploreChance": 0.2
   },
-
   "games": {
     "corrida": {
       "teams": [
-        { "id": 1, "name": "Fogo",     "color": "#ff5a36", "emoji": "🔥" },
-        { "id": 2, "name": "Água",     "color": "#2f9bff", "emoji": "💧" },
-        { "id": 3, "name": "Raio",     "color": "#ffd21f", "emoji": "⚡" },
-        { "id": 4, "name": "Floresta", "color": "#2fd27a", "emoji": "🌿" }
+        {
+          "id": 1,
+          "name": "Fogo",
+          "color": "#ff5a36",
+          "emoji": "🔥"
+        },
+        {
+          "id": 2,
+          "name": "Água",
+          "color": "#2f9bff",
+          "emoji": "💧"
+        },
+        {
+          "id": 3,
+          "name": "Raio",
+          "color": "#ffd21f",
+          "emoji": "⚡"
+        },
+        {
+          "id": 4,
+          "name": "Floresta",
+          "color": "#2fd27a",
+          "emoji": "🌿"
+        }
       ],
-      "round": { "trackLength": 1000, "maxSeconds": 240, "intermissionSeconds": 20 },
+      "round": {
+        "trackLength": 1000,
+        "maxSeconds": 240,
+        "intermissionSeconds": 20
+      },
       "scoring": {
-        "pointsPerDiamond": 4, "pointsPerLikeBatch": 1, "likesPerBatch": 10,
-        "pointsPerComment": 0.5, "commentCooldownSeconds": 5,
-        "pointsPerFollow": 5, "pointsPerShare": 8
+        "pointsPerDiamond": 4,
+        "pointsPerLikeBatch": 1,
+        "likesPerBatch": 10,
+        "pointsPerComment": 0.5,
+        "commentCooldownSeconds": 5,
+        "pointsPerFollow": 5,
+        "pointsPerShare": 8
       },
       "specialGifts": {
-        "Rose":         { "effect": "boost",         "label": "Turbo pequeno" },
-        "Finger Heart": { "effect": "shield",        "label": "Escudo 10s" },
-        "Doughnut":     { "effect": "freeze_leader", "label": "Congela o líder 5s" },
-        "Galaxy":       { "effect": "mega",          "label": "MEGA turbo" }
+        "Rose": {
+          "effect": "boost",
+          "label": "Turbo pequeno"
+        },
+        "Finger Heart": {
+          "effect": "shield",
+          "label": "Escudo 10s"
+        },
+        "Doughnut": {
+          "effect": "freeze_leader",
+          "label": "Congela o líder 5s"
+        },
+        "Galaxy": {
+          "effect": "mega",
+          "label": "MEGA turbo"
+        }
       }
     },
-
     "chefao": {
       "baseHp": 400,
       "hpGrowth": 1.35,
       "allyDps": 1.5,
       "defeatedSeconds": 10,
       "damage": {
-        "perComment": 2, "commentCooldownSeconds": 3,
-        "perLikeBatch": 1, "likesPerBatch": 10,
-        "perFollow": 25, "perShare": 40,
+        "perComment": 2,
+        "commentCooldownSeconds": 3,
+        "perLikeBatch": 1,
+        "likesPerBatch": 10,
+        "perFollow": 25,
+        "perShare": 40,
         "perCoin": 10
       },
       "tiers": [
-        { "minCoins": 1,    "name": "Ataque",    "fx": "hit" },
-        { "minCoins": 30,   "name": "Raio",      "fx": "lightning" },
-        { "minCoins": 100,  "name": "Meteoro",   "fx": "meteor" },
-        { "minCoins": 1000, "name": "ULTIMATE",  "fx": "ultimate" }
+        {
+          "minCoins": 1,
+          "name": "Ataque",
+          "fx": "hit"
+        },
+        {
+          "minCoins": 30,
+          "name": "Raio",
+          "fx": "lightning"
+        },
+        {
+          "minCoins": 100,
+          "name": "Meteoro",
+          "fx": "meteor"
+        },
+        {
+          "minCoins": 1000,
+          "name": "ULTIMATE",
+          "fx": "ultimate"
+        }
       ],
       "bosses": [
-        { "name": "Slime Rei",       "emoji": "🟢" },
-        { "name": "Polvo Abissal",   "emoji": "🐙" },
-        { "name": "Dragão de Lava",  "emoji": "🐉" },
-        { "name": "Robô Colosso",    "emoji": "🤖" },
-        { "name": "Caveira Ancestral","emoji": "💀" },
-        { "name": "Alien Supremo",   "emoji": "👾" }
+        {
+          "name": "Slime Rei",
+          "emoji": "🟢"
+        },
+        {
+          "name": "Polvo Abissal",
+          "emoji": "🐙"
+        },
+        {
+          "name": "Dragão de Lava",
+          "emoji": "🐉"
+        },
+        {
+          "name": "Robô Colosso",
+          "emoji": "🤖"
+        },
+        {
+          "name": "Caveira Ancestral",
+          "emoji": "💀"
+        },
+        {
+          "name": "Alien Supremo",
+          "emoji": "👾"
+        }
       ]
     },
-
     "melancia": {
       "minBands": 60,
       "maxBands": 180,
       "bandsPerCoin": 1,
       "maxBandsPerEvent": 40,
-      "bandsPerComment": 1, "commentCooldownSeconds": 5,
+      "bandsPerComment": 1,
+      "commentCooldownSeconds": 5,
       "likesPerBand": 30,
-      "bandsPerFollow": 3, "bandsPerShare": 5,
+      "bandsPerFollow": 3,
+      "bandsPerShare": 5,
       "explodedSeconds": 10,
       "objects": [
-        { "name": "Melancia", "emoji": "🍉" },
-        { "name": "Abóbora",  "emoji": "🎃" },
-        { "name": "Balão",    "emoji": "🎈" },
-        { "name": "Coco",     "emoji": "🥥" }
+        {
+          "name": "Melancia",
+          "emoji": "🍉"
+        },
+        {
+          "name": "Abóbora",
+          "emoji": "🎃"
+        },
+        {
+          "name": "Balão",
+          "emoji": "🎈"
+        },
+        {
+          "name": "Coco",
+          "emoji": "🥥"
+        }
       ]
     }
   }

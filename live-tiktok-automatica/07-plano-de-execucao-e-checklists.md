@@ -9,22 +9,20 @@
 - [ ] Ler o arquivo 01 inteiro
 
 ## Fase 1: montar no PC (1 dia)
-- [ ] Instalar o **Node.js 20 ou mais novo** (nodejs.org, versão LTS)
-- [ ] Copiar a pasta `starter/`, colocar o seu usuário em `config.json` → `tiktokUsername`
-- [ ] Rodar `scripts\simular-windows.bat` e ver o jogo funcionando com eventos falsos
-- [ ] Instalar o OBS ou o LIVE Studio e adicionar a **Fonte de navegador** `http://localhost:3000/` em 1080x1920
-- [ ] Testar a webcam e o microfone na cena
-- [ ] (Opcional) Criar uma conta grátis na **Euler Stream** e colocar a chave em `config.json` → `eulerApiKey`
+- [ ] Dar dois cliques no **`INSTALAR.bat`** (instala e configura tudo; ver `COMO-USAR.md`)
+- [ ] Abrir o atalho **Painel da Live** e ver o jogo no OBS (o instalador já configura o OBS)
+- [ ] (Opcional) Adicionar webcam ou microfone na cena "Jogo" do OBS
+- [ ] (Opcional) Criar uma conta grátis na **Euler Stream** e colocar a chave em `%USERPROFILE%\LiveTikTok\config.json` → `eulerApiKey`
 
 ## Fase 2: primeira live de teste (1 semana)
-- [ ] Iniciar a live, depois rodar `scripts\iniciar-windows.bat` (ele conecta na live que já está no ar)
+- [ ] Colar o Servidor e a Chave do LIVE Center no painel e clicar em **LIGAR LIVE**
 - [ ] Conferir que comentários de 1 a 4 entram nos times
-- [ ] Conferir em `http://localhost:3000/api/stats` que os presentes estão sendo registrados
+- [ ] Conferir no painel (card "Hoje") que os presentes estão sendo registrados
 - [ ] Fazer lives de 1–2 horas **com você presente** em horários diferentes
 - [ ] Anotar: espectadores médios, pico, presentes, horários
 
 ## Fase 3: otimizar (semanas 2 a 4)
-- [ ] Analisar os arquivos `data/ledger-*.jsonl`: quais **horários** e quais **presentes** rendem
+- [ ] Olhar o card **Aprendizado automático** do painel (o rodízio já prioriza sozinho os jogos que rendem mais) e os arquivos `data/ledger-*.jsonl` (horários e presentes)
 - [ ] Ajustar os pontos e efeitos em `config.json` (presentes baratos devem ter efeito visível)
 - [ ] Testar 1–2 jogos de pacote pronto (arquivo 06) para ver o que o público curte
 - [ ] **Preencher `09-ficha-do-seu-jogo.md`**, e eu implemento o seu jogo
@@ -32,21 +30,21 @@
 
 ## Fase 4: escala (mês 2 em diante)
 - [ ] Definir a grade fixa de horários (o TikTok recomenda ter uma agenda)
-- [ ] Automação de horário: Agendador de Tarefas + `obs64.exe --startstreaming` + parada via obs-websocket
+- [ ] Usar o campo **"Desligar sozinho às"** do painel para encerrar no horário
 - [ ] Contratar apresentadores **só para horários que já se pagam** (arquivo 03), de preferência ganhando porcentagem do turno
 - [ ] Contrato com o apresentador: uso de imagem, roteiro (arquivo 02), proibições (arquivo 05)
 - [ ] Rodar a liga semanal e lançar jogos novos a cada 2–4 semanas para manter a novidade
 - [ ] Conversar com um contador sobre a tributação
 
 ## Checklist diário (2 minutos)
-- [ ] `http://localhost:3000/health` → `connected: true`
+- [ ] Painel da Live: "AO VIVO" e "Conectado"
 - [ ] O som e a câmera do apresentador estão ok
-- [ ] Ontem: ver `api/stats?day=…` e anotar numa planilha
+- [ ] Ontem: ver `http://127.0.0.1:3000/api/stats?day=AAAA-MM-DD` e anotar numa planilha
 - [ ] Ver o **LIVE Center › Restrictions** no app: não pode haver nenhuma restrição
 - [ ] Espaço em disco para as gravações
 
 ## Checklist semanal
-- [ ] `npm update` dentro de `starter/` (atualiza a biblioteca de conexão) e teste no simulador
+- [ ] Baixar a versão nova do projeto e rodar o `INSTALAR.bat` de novo (atualiza e mantém as suas configurações)
 - [ ] Atualizar o Windows e os drivers **fora** do horário da live
 - [ ] Revisar quais jogos e efeitos renderam mais; ajustar
 - [ ] Fazer backup da pasta `data/`
@@ -55,6 +53,6 @@
 | Sinal | Ação |
 |---|---|
 | Aviso de restrição de monetização no inbox | Parar e ler o motivo. Recorrer pelo inbox. Revisar o que mudou (presença, textos, efeitos). |
-| Supervisor reiniciando várias vezes por hora | Ver `data/supervisor.log`. Rodar `npm update`. O TikTok pode ter mudado o protocolo. |
+| Jogo reiniciando várias vezes por hora | Ver `data/controlador.log`. Rodar o `INSTALAR.bat` de novo (atualiza). O TikTok pode ter mudado o protocolo. |
 | `silentForSeconds` alto com a live no ar | A conexão de leitura caiu. Ver a internet e o limite da Euler Stream (a chave grátis aumenta o limite). |
 | Espectadores caindo | Trocar de jogo, aumentar a interação do apresentador, testar outro horário |

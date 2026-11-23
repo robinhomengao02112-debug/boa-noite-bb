@@ -1,7 +1,7 @@
 @echo off
-REM Roda o jogo com eventos FALSOS (simulador) para testar sem estar ao vivo.
+REM Testa o jogo com eventos FALSOS (sem live). Abre o jogo no navegador.
 cd /d "%~dp0.."
-if not exist node_modules call npm install
-start "" http://localhost:3000/
+if not exist node_modules call npm ci --omit=dev
+start "" http://127.0.0.1:3000/
 node src\server.js --simulate
 pause
