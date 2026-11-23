@@ -1,0 +1,36 @@
+{
+  "tiktokUsername": "SEU_USUARIO_AQUI",
+  "eulerApiKey": "",
+  "port": 3000,
+  "teams": [
+    { "id": 1, "name": "Fogo",    "color": "#ff5a36", "emoji": "🔥" },
+    { "id": 2, "name": "Água",    "color": "#2f9bff", "emoji": "💧" },
+    { "id": 3, "name": "Raio",    "color": "#ffd21f", "emoji": "⚡" },
+    { "id": 4, "name": "Floresta","color": "#2fd27a", "emoji": "🌿" }
+  ],
+  "round": {
+    "trackLength": 1000,
+    "maxSeconds": 240,
+    "intermissionSeconds": 20
+  },
+  "scoring": {
+    "pointsPerDiamond": 4,
+    "pointsPerLikeBatch": 1,
+    "likesPerBatch": 10,
+    "pointsPerComment": 0.5,
+    "commentCooldownSeconds": 5,
+    "pointsPerFollow": 5,
+    "pointsPerShare": 8
+  },
+  "specialGifts": {
+    "Rose":        { "effect": "boost",  "label": "Turbo pequeno" },
+    "Finger Heart":{ "effect": "shield", "label": "Escudo 10s" },
+    "Doughnut":    { "effect": "freeze_leader", "label": "Congela o líder 5s" },
+    "Galaxy":      { "effect": "mega",   "label": "MEGA turbo" }
+  },
+  "estimatedUsdPerDiamond": 0.005,
+  "safety": {
+    "noRealPrizes": true,
+    "note": "Nunca ofereça dinheiro/prêmio real ou sorteio em troca de presentes."
+  }
+}

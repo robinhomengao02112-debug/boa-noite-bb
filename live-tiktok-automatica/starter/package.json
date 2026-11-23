@@ -1,0 +1,19 @@
+{
+  "name": "live-tiktok-starter",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Motor de jogo interativo para TikTok LIVE: conecta aos eventos da live, roda o jogo como overlay (fonte de navegador no OBS/LIVE Studio) e registra receita estimada.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "sim": "node src/server.js --simulate",
+    "supervisor": "node scripts/supervisor.js"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "express": "^5.3.0",
+    "socket.io": "^4.8.4",
+    "tiktok-live-connector": "^2.5.0"
+  }
+}

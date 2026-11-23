@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Corrida de Elementos — Overlay</title>
+<meta name="viewport" content="width=1080, height=1920">
+<style>
+  /* Overlay vertical 1080x1920. No OBS/LIVE Studio: Fonte de Navegador, 1080x1920. */
+  :root { --bg:#0d0f1a; --panel:rgba(255,255,255,.06); --text:#f4f6ff; --muted:#9aa3c7; }
+  html,body { margin:0; width:1080px; height:1920px; overflow:hidden; background:var(--bg); color:var(--text); font-family: system-ui, "Segoe UI", Roboto, sans-serif; }
+  header { padding:70px 60px 10px; text-align:center; }
+  h1 { font-size:76px; margin:0; letter-spacing:1px; }
+  .sub { font-size:34px; color:var(--muted); margin-top:10px; }
+  .how { margin:24px 60px; padding:22px 30px; background:var(--panel); border-radius:28px; font-size:32px; line-height:1.45; }
+  .how b { color:#fff; }
+  .track { margin:20px 60px; display:flex; flex-direction:column; gap:26px; }
+  .lane { position:relative; height:150px; border-radius:30px; background:var(--panel); overflow:hidden; }
+  .lane .fill { position:absolute; inset:0 auto 0 0; width:0; opacity:.28; transition:width .12s linear; }
+  .lane .runner { position:absolute; top:58%; transform:translate(-50%,-50%); font-size:96px; transition:left .12s linear; filter:drop-shadow(0 6px 12px rgba(0,0,0,.6)); }
+  .lane .label { position:absolute; z-index:2; left:28px; top:16px; font-size:34px; font-weight:700; }
+  .lane .meta { position:absolute; right:28px; bottom:14px; font-size:28px; color:var(--muted); }
+  .lane .flag { position:absolute; right:0; top:0; bottom:0; width:16px; background:repeating-linear-gradient(0deg,#fff 0 16px,#000 16px 32px); opacity:.8; }
+  .lane.frozen .runner { filter: hue-rotate(180deg) brightness(1.6); }
+  .lane.shield { box-shadow: 0 0 0 6px #7df9ff inset; }
+  .row { display:flex; gap:26px; margin:10px 60px; }
+  .box { flex:1; background:var(--panel); border-radius:28px; padding:24px 30px; min-height:330px; }
+  .box h3 { margin:0 0 14px; font-size:34px; color:var(--muted); font-weight:600; }
+  .box ol, .box ul { margin:0; padding-left:40px; font-size:32px; line-height:1.5; }
+  .timer { text-align:center; font-size:44px; margin:12px 0; color:var(--muted); }
+  #winner { position:absolute; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column; background:rgba(5,6,12,.86); text-align:center; }
+  #winner .big { font-size:200px; }
+  #winner .t { font-size:84px; font-weight:800; }
+  #winner .s { font-size:40px; color:var(--muted); margin-top:20px; }
+  #toast { position:absolute; left:60px; right:60px; bottom:120px; text-align:center; font-size:52px; font-weight:800; opacity:0; transition:opacity .3s; text-shadow:0 4px 18px #000; }
+  #status { position:absolute; right:20px; bottom:16px; font-size:22px; color:#556; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>CORRIDA DE ELEMENTOS</h1>
+    <div class="sub" id="roundInfo">Rodada 1</div>
+  </header>
+  <div class="how">
+    Comente <b>1</b>, <b>2</b>, <b>3</b> ou <b>4</b> para entrar num time.<br>
+    Curtir, comentar, seguir e compartilhar <b>empurram seu time</b>.<br>
+    Presentes dão turbos e efeitos especiais.
+  </div>
+  <div class="timer" id="timer">⏱ 4:00</div>
+  <div class="track" id="track"></div>
+  <div class="row">
+    <div class="box"><h3>Destaques da rodada</h3><ol id="top"></ol></div>
+    <div class="box"><h3>Acontecendo agora</h3><ul id="feed"></ul></div>
+  </div>
+  <div class="row"><div class="box" style="min-height:0"><h3>Vitórias hoje</h3><div id="wins" style="font-size:36px"></div></div></div>
+  <div id="winner"><div class="big" id="wEmoji"></div><div class="t" id="wName"></div><div class="s" id="wMvp"></div><div class="s" id="wNext"></div></div>
+  <div id="toast"></div>
+  <div id="status"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  let teams = [], lanes = {};
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  let trackLength = 1000;
+
+  socket.on('config', (cfg) => {
+    teams = cfg.teams; trackLength = cfg.round.trackLength;
+    const track = $('track'); track.innerHTML = '';
+    for (const t of teams) {
+      const el = document.createElement('div');
+      el.className = 'lane';
+      el.innerHTML = `<div class="fill" style="background:${t.color}"></div><div class="flag"></div>
+        <div class="label" style="color:${t.color}">${t.id} · ${esc(t.name)}</div>
+        <div class="runner">${t.emoji}</div><div class="meta"></div>`;
+      track.appendChild(el);
+      lanes[t.id] = el;
+    }
+  });
+
+  socket.on('state', (s) => {
+    $('roundInfo').textContent = `Rodada ${s.round}`;
+    const m = Math.floor(s.timeLeft / 60), sec = String(s.timeLeft % 60).padStart(2, '0');
+    $('timer').textContent = s.phase === 'racing' ? `⏱ ${m}:${sec}` : `Próxima rodada em ${s.intermission}s`;
+    for (const t of s.teams) {
+      const el = lanes[t.id]; if (!el) continue;
+      const pct = Math.min(100, (t.pos / trackLength) * 100);
+      el.querySelector('.fill').style.width = pct + '%';
+      el.querySelector('.runner').style.left = `calc(${Math.max(10, Math.min(92, pct))}%)`;
+      el.querySelector('.meta').textContent = `${t.members} no time · ${Math.round(pct)}%`;
+      el.classList.toggle('frozen', t.frozen);
+      el.classList.toggle('shield', t.shield);
+    }
+    $('top').innerHTML = s.top.map((c) => `<li>${esc(c.nick)} — ${c.pts}</li>`).join('') || '<li style="list-style:none;color:#778">Seja o primeiro!</li>';
+    $('feed').innerHTML = s.feed.map((f) => `<li>${esc(f)}</li>`).join('');
+    $('wins').innerHTML = teams.map((t) => `${t.emoji} ${s.wins[t.id] || 0}`).join('&nbsp;&nbsp;&nbsp;');
+    const w = $('winner');
+    if (s.winner) {
+      w.style.display = 'flex';
+      $('wEmoji').textContent = s.winner.emoji;
+      $('wName').textContent = `${s.winner.name} VENCEU!`;
+      $('wName').style.color = s.winner.color;
+      $('wMvp').textContent = s.winner.mvp.length ? 'Destaques: ' + s.winner.mvp.map((x) => x.nick).join(', ') : '';
+      $('wNext').textContent = `Nova corrida em ${s.intermission}s — escolha seu time!`;
+    } else w.style.display = 'none';
+  });
+
+  let toastTimer;
+  socket.on('fx', (fx) => {
+    const t = teams.find((x) => x.id === fx.team);
+    let msg = null;
+    if (fx.kind === 'gift' && fx.effect) msg = `${fx.nick}: ${fx.gift}${fx.count > 1 ? ' x' + fx.count : ''} → ${t ? t.emoji : ''}`;
+    if (fx.kind === 'follow') msg = `${fx.nick} seguiu! +força ${t ? t.emoji : ''}`;
+    if (!msg) return;
+    const el = $('toast'); el.textContent = msg; el.style.opacity = 1;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => (el.style.opacity = 0), 1800);
+  });
+
+  socket.on('status', (st) => { $('status').textContent = `${st.mode} · ${st.connected ? 'conectado' : 'reconectando…'}`; });
+</script>
+</body>
+</html>
