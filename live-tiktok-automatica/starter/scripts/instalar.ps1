@@ -9,14 +9,21 @@
 #   6. Cria atalhos (Área de Trabalho + inicialização automática)
 #   7. Inicia o controlador e abre o painel
 #  Pode ser rodado de novo para ATUALIZAR (mantém suas configurações).
+#
+#  Uso sem perguntas (ex.: pelo Claude Code):
+#    powershell -NoProfile -ExecutionPolicy Bypass -File instalar.ps1 -Usuario seu_usuario -SemPausa
 # ============================================================
+param(
+  [string]$Usuario = '',
+  [switch]$SemPausa
+)
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 
 function Info($m) { Write-Host "`n==> $m" -ForegroundColor Cyan }
 function Ok($m)   { Write-Host "    OK: $m" -ForegroundColor Green }
 function Warn($m) { Write-Host "    AVISO: $m" -ForegroundColor Yellow }
-function Fail($m) { Write-Host "`nERRO: $m" -ForegroundColor Red; Read-Host "`nPressione ENTER para sair"; exit 1 }
+function Fail($m) { Write-Host "`nERRO: $m" -ForegroundColor Red; if (-not $SemPausa) { Read-Host "`nPressione ENTER para sair" }; exit 1 }
 function Refresh-Path {
   $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
 }
@@ -114,7 +121,7 @@ $cfg = Get-Content (Join-Path $Dest 'config.json') -Raw -Encoding UTF8 | Convert
 $current = $cfg.tiktokUsername
 $prompt = 'Digite seu usuario do TikTok (sem @)'
 if ($current -and $current -ne 'SEU_USUARIO_AQUI') { $prompt += " [ENTER mantem: $current]" }
-$user = Read-Host $prompt
+if ($Usuario) { $user = $Usuario.Trim().TrimStart('@') } else { $user = Read-Host $prompt }
 Push-Location $Dest
 if ($user) { & node scripts\setup.js "--user=$user" } else { & node scripts\setup.js }
 $setupCode = $LASTEXITCODE
@@ -172,4 +179,5 @@ Write-Host '  Painel:   http://127.0.0.1:3001  (atalho "Painel da Live")'
 Write-Host '  Para ir ao vivo: cole o Servidor e a Chave do TikTok LIVE Center no painel e clique LIGAR.'
 Write-Host '  Tudo volta a rodar sozinho quando o Windows iniciar.'
 Write-Host '  ============================================' -ForegroundColor Green
-Read-Host "`nPressione ENTER para fechar"
+if (-not $SemPausa) { Read-Host "`nPressione ENTER para fechar" }
+exit 0
