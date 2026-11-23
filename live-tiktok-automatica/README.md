@@ -16,7 +16,8 @@ Quando uma informação vem só de sites de terceiros (e não do TikTok), isso e
 | [`07-plano-de-execucao-e-checklists.md`](07-plano-de-execucao-e-checklists.md) | Plano passo a passo, da conta até a operação, com checklists diários. |
 | [`08-fontes.md`](08-fontes.md) | Todas as fontes, separadas entre oficiais e de terceiros. |
 | [`09-ficha-do-seu-jogo.md`](09-ficha-do-seu-jogo.md) | Um modelo para você descrever o jogo que já tem em mente; eu implemento a partir dele. |
-| [`starter/`](starter/) | **Um protótipo que já funciona:** jogo "Corrida de Elementos", conexão com a live, overlay para OBS, simulador, registro de receita e um supervisor que reinicia sozinho. |
+| [`10-catalogo-de-jogos.md`](10-catalogo-de-jogos.md) | **Catálogo com 45 ideias em 8 estilos**, cada uma numa ficha pronta para implementar, mais a ficha detalhada da **Fazenda da Live** e a ordem recomendada de desenvolvimento. |
+| [`starter/`](starter/) | **Motor com 3 jogos jogáveis** (Raid do Chefão, Corrida de Elementos, Estoura ou Não), rodízio automático entre jogos, conexão com a live, overlay para OBS, simulador, receita por jogo e por hora, e um supervisor que reinicia sozinho. |
 
 ---
 
@@ -70,4 +71,6 @@ O arquivo 02 traz o desenho completo. Em resumo:
 ## Status
 - [x] Pesquisa de regras, mercado, ferramentas, economia e jogos
 - [x] Protótipo funcional (`starter/`), testado no simulador sem erros
-- [ ] **Próximo passo:** você preenche o `09-ficha-do-seu-jogo.md` com a sua ideia, e eu transformo em jogo no mesmo motor do protótipo
+- [x] Catálogo com 45 ideias formatadas (`10-catalogo-de-jogos.md`)
+- [x] Motor com vários jogos + rodízio: Chefão, Corrida e Estoura ou Não, todos testados
+- [ ] **Próximo passo:** escolher o próximo jogo (sugestão: Fazenda da Live ou o seu jogo pela ficha 09)

@@ -23,7 +23,7 @@
   .lane.frozen .runner { filter: hue-rotate(180deg) brightness(1.6); }
   .lane.shield { box-shadow: 0 0 0 6px #7df9ff inset; }
   .row { display:flex; gap:26px; margin:10px 60px; }
-  .box { flex:1; background:var(--panel); border-radius:28px; padding:24px 30px; min-height:330px; }
+  .box { flex:1; background:var(--panel); border-radius:28px; padding:24px 30px; min-height:330px; max-height:420px; overflow:hidden; }
   .box h3 { margin:0 0 14px; font-size:34px; color:var(--muted); font-weight:600; }
   .box ol, .box ul { margin:0; padding-left:40px; font-size:32px; line-height:1.5; }
   .timer { text-align:center; font-size:44px; margin:12px 0; color:var(--muted); }
@@ -57,8 +57,9 @@
   <div id="status"></div>
 
 <script src="/socket.io/socket.io.js"></script>
+<script src="/shared/client.js"></script>
 <script>
-  const socket = io();
+  const socket = Live.socket;
   let teams = [], lanes = {};
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
@@ -116,7 +117,6 @@
     clearTimeout(toastTimer); toastTimer = setTimeout(() => (el.style.opacity = 0), 1800);
   });
 
-  socket.on('status', (st) => { $('status').textContent = `${st.mode} · ${st.connected ? 'conectado' : 'reconectando…'}`; });
 </script>
 </body>
 </html>

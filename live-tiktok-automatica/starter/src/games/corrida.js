@@ -4,7 +4,8 @@
 // - Presentes = empurram mais forte + efeitos especiais.
 // Nenhum prêmio real é oferecido; o placar é só diversão/reconhecimento.
 
-export class Game {
+export class Corrida {
+  static id = 'corrida';
   constructor(config) {
     this.cfg = config;
     this.teams = config.teams.map((t) => ({ ...t, pos: 0, frozenUntil: 0, shieldUntil: 0, members: 0 }));
@@ -22,6 +23,8 @@ export class Game {
   }
 
   now() { return Date.now(); }
+
+  publicConfig() { return { teams: this.cfg.teams, round: this.cfg.round, specialGifts: this.cfg.specialGifts }; }
 
   teamFor(user, text) {
     if (text) {
@@ -52,7 +55,7 @@ export class Game {
 
   pushFeed(msg) {
     this.feed.unshift({ msg, t: this.now() });
-    this.feed = this.feed.slice(0, 6);
+    this.feed = this.feed.slice(0, 5);
   }
 
   add(team, pts, user) {

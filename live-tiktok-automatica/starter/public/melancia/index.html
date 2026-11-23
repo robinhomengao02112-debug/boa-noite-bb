@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Estoura ou Não — Overlay</title>
+<meta name="viewport" content="width=1080, height=1920">
+<style>
+  :root { --bg:#0b1a12; --panel:rgba(255,255,255,.07); --text:#fff; --muted:#a9d6b9; }
+  html,body { margin:0; width:1080px; height:1920px; overflow:hidden; background:radial-gradient(circle at 50% 40%, #1d4a2c 0%, var(--bg) 65%); color:var(--text); font-family:system-ui,"Segoe UI",Roboto,sans-serif; }
+  header { text-align:center; padding:60px 40px 0; }
+  h1 { margin:0; font-size:76px; }
+  .sub { font-size:34px; color:var(--muted); margin-top:6px; }
+  .how { margin:22px 60px; padding:20px 28px; background:var(--panel); border-radius:26px; font-size:31px; line-height:1.45; text-align:center; }
+  .stage { position:relative; height:720px; display:flex; align-items:center; justify-content:center; }
+  #obj { font-size:360px; line-height:1; transition:transform .15s; filter:drop-shadow(0 20px 40px rgba(0,0,0,.6)); }
+  .band { position:absolute; left:50%; width:420px; height:10px; margin-left:-210px; border-radius:6px; background:#ffcf33; opacity:.85; }
+  #boom { position:absolute; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column; text-align:center; }
+  #boom .big { font-size:360px; animation:pop .5s ease-out; }
+  @keyframes pop { from { transform:scale(.2); opacity:0; } to { transform:scale(1); opacity:1; } }
+  #boom .t { font-size:72px; font-weight:900; color:#ffe14d; text-shadow:0 4px 18px #000; }
+  .count { text-align:center; font-size:64px; font-weight:900; }
+  .meter { margin:14px 60px; height:40px; border-radius:20px; background:rgba(255,255,255,.12); overflow:hidden; }
+  .meter div { height:100%; background:linear-gradient(90deg,#2fd27a,#ffd21f,#ff3d3d); transition:width .2s; }
+  .row { display:flex; gap:24px; margin:22px 60px 0; }
+  .box { flex:1; background:var(--panel); border-radius:26px; padding:22px 28px; min-height:260px; }
+  .box h3 { margin:0 0 12px; font-size:32px; color:var(--muted); font-weight:600; }
+  .box ol, .box ul { margin:0; padding-left:38px; font-size:31px; line-height:1.5; }
+  #toast { position:absolute; left:40px; right:40px; bottom:110px; text-align:center; font-size:52px; font-weight:900; opacity:0; transition:opacity .3s; text-shadow:0 4px 18px #000; }
+  #status { position:absolute; right:20px; bottom:16px; font-size:22px; color:#556; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>ESTOURA OU NÃO?</h1>
+    <div class="sub" id="round">Rodada 1</div>
+  </header>
+  <div class="how">Cada interação coloca <b>elásticos</b>. Ninguém sabe quando estoura!<br>Comentar e curtir valem · presentes colocam vários de uma vez</div>
+  <div class="stage" id="stage"><div id="obj">🍉</div><div id="boom"><div class="big">💥</div><div class="t" id="boomT"></div><div class="sub" id="boomN"></div></div></div>
+  <div class="count" id="count">0 elásticos</div>
+  <div class="meter"><div id="meter"></div></div>
+  <div class="row">
+    <div class="box"><h3>Quem mais colocou</h3><ol id="top"></ol></div>
+    <div class="box"><h3>Acontecendo agora</h3><ul id="feed"></ul></div>
+  </div>
+  <div class="row">
+    <div class="box" style="min-height:0"><h3>Reis do estouro (hoje)</h3><div id="kings" style="font-size:32px"></div></div>
+    <div class="box" style="min-height:0"><h3>Últimos estouros</h3><div id="hist" style="font-size:32px"></div></div>
+  </div>
+  <div id="toast"></div>
+  <div id="status"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/shared/client.js"></script>
+<script>
+  const { socket, esc, toast } = Live;
+  const $ = (id) => document.getElementById(id);
+  let shownBands = -1;
+
+  function drawBands(n) {
+    if (n === shownBands) return;
+    shownBands = n;
+    document.querySelectorAll('.band').forEach((b) => b.remove());
+    const show = Math.min(n, 40); // desenha no máximo 40 faixas visíveis
+    for (let i = 0; i < show; i++) {
+      const b = document.createElement('div');
+      b.className = 'band';
+      const off = (i % 2 ? 1 : -1) * Math.ceil(i / 2) * 8; // empilha do meio para fora
+      b.style.top = (360 + off) + 'px';
+      b.style.transform = `rotate(${(i % 2 ? 1 : -1) * (4 + (i % 5))}deg)`;
+      $('stage').appendChild(b);
+    }
+  }
+
+  socket.on('state', (s) => {
+    $('round').textContent = `Rodada ${s.round} · estoura entre ${s.range[0]} e ${s.range[1]} elásticos`;
+    const exploded = s.phase === 'exploded';
+    $('obj').style.display = exploded ? 'none' : 'block';
+    $('boom').style.display = exploded ? 'flex' : 'none';
+    $('obj').textContent = s.obj.emoji;
+    const squash = 1 + s.tension * 0.18;
+    $('obj').style.transform = `scale(${squash}, ${2 - squash}) rotate(${(Math.random() - 0.5) * s.tension * 8}deg)`;
+    drawBands(exploded ? 0 : s.bands);
+    $('count').textContent = `${s.bands} elásticos`;
+    $('meter').style.width = (s.tension * 100) + '%';
+    if (exploded) {
+      $('boomT').textContent = `EXPLODIU por ${s.exploder}!`;
+      $('boomN').textContent = `Nova rodada em ${s.phaseLeft}s`;
+    }
+    $('top').innerHTML = s.top.map((t) => `<li>${esc(t.nick)} — ${t.n}</li>`).join('') || '<li style="list-style:none;color:#787">Comente para começar!</li>';
+    $('feed').innerHTML = s.feed.map((f) => `<li>${esc(f)}</li>`).join('');
+    $('kings').innerHTML = s.exploders.map((e, i) => `${['👑','🥈','🥉'][i]} ${esc(e.nick)} (${e.n})`).join('<br>') || '—';
+    $('hist').innerHTML = s.history.map((h) => `${h.obj} ${h.bands} · ${esc(h.by)}`).join('<br>') || '—';
+  });
+
+  socket.on('fx', (fx) => {
+    if (fx.kind === 'explode') toast(`💥 ${fx.nick} ESTOUROU!`, 2500);
+  });
+</script>
+</body>
+</html>

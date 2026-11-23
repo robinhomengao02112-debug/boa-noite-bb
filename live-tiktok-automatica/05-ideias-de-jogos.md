@@ -1,5 +1,7 @@
 # 05 — Ideias de jogos para lucrar (com análise)
 
+> **Versão ampliada:** o arquivo [`10-catalogo-de-jogos.md`](10-catalogo-de-jogos.md) tem 45 ideias em fichas prontas para implementar.
+
 ## 5.1 O que faz um jogo de live dar dinheiro (padrões do mercado)
 O mercado tem dezenas de jogos vendidos, e os mais citados repetem os mesmos padrões:
 corridas por países ou times, batalhas de território, cabo de guerra, exércitos que nascem de presentes, jogos de "ajuda ou atrapalha" o streamer, Minecraft com presentes, adivinhação de palavras e desenho, e cobra que cresce. Detalhes no arquivo 06.

@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Raid do Chefão — Overlay</title>
+<meta name="viewport" content="width=1080, height=1920">
+<style>
+  :root { --bg:#120a1c; --panel:rgba(255,255,255,.07); --text:#fff; --muted:#b7a9d6; --hp:#ff3d5a; }
+  html,body { margin:0; width:1080px; height:1920px; overflow:hidden; background:radial-gradient(circle at 50% 35%, #3a1450 0%, var(--bg) 60%); color:var(--text); font-family:system-ui,"Segoe UI",Roboto,sans-serif; }
+  header { text-align:center; padding:60px 40px 0; }
+  h1 { margin:0; font-size:78px; letter-spacing:2px; }
+  .sub { font-size:34px; color:var(--muted); margin-top:6px; }
+  .how { margin:22px 60px; padding:20px 28px; background:var(--panel); border-radius:26px; font-size:31px; line-height:1.45; text-align:center; }
+  .arena { position:relative; height:640px; display:flex; align-items:center; justify-content:center; }
+  #boss { font-size:400px; line-height:1; filter:drop-shadow(0 20px 40px rgba(0,0,0,.7)); animation:idle 2.4s ease-in-out infinite; }
+  #boss.shake { animation:shake .25s linear 2; }
+  @keyframes idle { 0%,100% { transform:translateY(0) scale(1); } 50% { transform:translateY(-18px) scale(1.03); } }
+  @keyframes shake { 0%,100% { transform:translateX(0); } 25% { transform:translateX(-24px) rotate(-3deg); } 75% { transform:translateX(24px) rotate(3deg); } }
+  .dmg { position:absolute; font-size:58px; font-weight:900; color:#ffe14d; text-shadow:0 4px 12px #000; pointer-events:none; animation:float 1.3s ease-out forwards; white-space:nowrap; }
+  .dmg small { display:block; font-size:30px; color:#fff; font-weight:700; text-align:center; }
+  @keyframes float { from { opacity:1; transform:translateY(0) scale(1); } to { opacity:0; transform:translateY(-220px) scale(1.25); } }
+  .flash { position:absolute; inset:0; pointer-events:none; opacity:0; }
+  .flash.on { animation:flash .6s ease-out; }
+  @keyframes flash { 0% { opacity:.85; } 100% { opacity:0; } }
+  .name { text-align:center; font-size:56px; font-weight:800; }
+  .hpbar { margin:16px 60px 6px; height:64px; border-radius:32px; background:rgba(255,255,255,.12); overflow:hidden; position:relative; }
+  .hpfill { height:100%; background:linear-gradient(90deg,#ff7a3d,var(--hp)); transition:width .15s linear; }
+  .hptext { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:34px; font-weight:800; text-shadow:0 2px 6px #000; }
+  .row { display:flex; gap:24px; margin:22px 60px 0; }
+  .box { flex:1; background:var(--panel); border-radius:26px; padding:22px 28px; min-height:300px; }
+  .box h3 { margin:0 0 12px; font-size:32px; color:var(--muted); font-weight:600; }
+  .box ol, .box ul { margin:0; padding-left:38px; font-size:31px; line-height:1.5; }
+  .stats { text-align:center; font-size:32px; color:var(--muted); margin-top:18px; }
+  #win { position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; background:rgba(8,4,14,.88); text-align:center; }
+  #win .big { font-size:220px; filter:grayscale(1) brightness(.7); transform:rotate(-12deg); }
+  #win .t { font-size:84px; font-weight:900; color:#ffe14d; }
+  #win .s { font-size:42px; margin-top:16px; }
+  #win ol { font-size:44px; text-align:left; margin-top:20px; }
+  #toast { position:absolute; left:40px; right:40px; top:610px; text-align:center; font-size:56px; font-weight:900; opacity:0; transition:opacity .3s; text-shadow:0 4px 18px #000; color:#7df9ff; }
+  #status { position:absolute; right:20px; bottom:16px; font-size:22px; color:#556; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>RAID DO CHEFÃO</h1>
+    <div class="sub" id="lvl">Nível 1</div>
+  </header>
+  <div class="how">Todo mundo ataca junto! <b>Comente</b> para golpear · <b>curtidas</b> causam dano · <b>seguir/compartilhar</b> = golpe crítico · presentes = poderes especiais</div>
+  <div class="name" id="bname">—</div>
+  <div class="arena" id="arena"><div class="flash" id="flash"></div><div id="boss">🟢</div></div>
+  <div class="hpbar"><div class="hpfill" id="hp"></div><div class="hptext" id="hpt"></div></div>
+  <div class="row">
+    <div class="box"><h3>Maior dano neste chefe</h3><ol id="top"></ol></div>
+    <div class="box"><h3>Acontecendo agora</h3><ul id="feed"></ul></div>
+  </div>
+  <div class="stats" id="today"></div>
+  <div id="win"><div class="big" id="wEmoji"></div><div class="t" id="wT"></div><div class="s" id="wLast"></div><ol id="wTop"></ol><div class="s" id="wNext"></div></div>
+  <div id="toast"></div>
+  <div id="status"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/shared/client.js"></script>
+<script>
+  const { socket, esc, toast } = Live;
+  const $ = (id) => document.getElementById(id);
+  const FLASH = { lightning:'#9be7ff', meteor:'#ff8a3d', ultimate:'#ffffff', crit:'#ffe14d' };
+
+  socket.on('state', (s) => {
+    $('lvl').textContent = `Nível ${s.level}`;
+    $('bname').textContent = `${s.boss.emoji} ${s.boss.name}`;
+    $('boss').textContent = s.boss.emoji;
+    const pct = (s.boss.hp / s.boss.maxHp) * 100;
+    $('hp').style.width = pct + '%';
+    $('hpt').textContent = `${s.boss.hp.toLocaleString('pt-BR')} / ${s.boss.maxHp.toLocaleString('pt-BR')} HP`;
+    $('top').innerHTML = s.top.map((t) => `<li>${esc(t.nick)} — ${t.dmg}</li>`).join('') || '<li style="list-style:none;color:#887">Comente para atacar!</li>';
+    $('feed').innerHTML = s.feed.map((f) => `<li>${esc(f)}</li>`).join('');
+    $('today').textContent = `Chefes derrotados hoje: ${s.today.defeated} · Maior nível: ${s.today.bestLevel}` + (s.today.mvp.length ? ` · MVP do dia: ${s.today.mvp[0].nick}` : '');
+    const w = $('win');
+    if (s.phase === 'defeated' && s.result) {
+      w.style.display = 'flex';
+      $('wEmoji').textContent = s.result.emoji;
+      $('wT').textContent = `${s.result.boss} DERROTADO!`;
+      $('wLast').textContent = `Último golpe: ${s.result.lastHit || 'aliados'}`;
+      $('wTop').innerHTML = s.result.top.map((t, i) => `<li>${['🥇','🥈','🥉'][i] || ''} ${esc(t.nick)} — ${t.dmg}</li>`).join('');
+      $('wNext').textContent = `Próximo chefe (nível ${s.level + 1}) em ${s.phaseLeft}s`;
+    } else w.style.display = 'none';
+  });
+
+  socket.on('fx', (fx) => {
+    if (fx.kind !== 'hit') return;
+    const el = document.createElement('div');
+    el.className = 'dmg';
+    el.style.left = (260 + Math.random() * 480) + 'px';
+    el.style.top = (160 + Math.random() * 260) + 'px';
+    el.innerHTML = `-${fx.dmg}<small>${esc(fx.nick)}</small>`;
+    $('arena').appendChild(el);
+    setTimeout(() => el.remove(), 1300);
+    const b = $('boss'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake');
+    if (FLASH[fx.fx]) {
+      const f = $('flash'); f.style.background = FLASH[fx.fx]; f.classList.remove('on'); void f.offsetWidth; f.classList.add('on');
+    }
+    if (fx.label && fx.fx !== 'hit') toast(`${fx.nick}: ${fx.label}!`);
+  });
+</script>
+</body>
+</html>
