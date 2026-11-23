@@ -14,5 +14,26 @@ window.Live = (function () {
     el.textContent = msg; el.style.opacity = 1;
     clearTimeout(toastTimer); toastTimer = setTimeout(() => (el.style.opacity = 0), ms);
   }
+  // ---------- trilha sonora + efeitos (música original gerada no navegador) ----------
+  socket.on('music', (opts) => { if (window.LiveMusic) window.LiveMusic.start(MY, opts); });
+  socket.on('fx', (fx) => {
+    const M = window.LiveMusic; if (!M) return;
+    if (fx.kind === 'gift') M.sfx(fx.diamonds >= 100 ? 'big' : 'gift', fx.diamonds || 1);
+    else if (fx.kind === 'follow' || fx.kind === 'share') M.sfx('follow');
+    else if (fx.kind === 'band') M.sfx('hit');
+    else if (fx.kind === 'hit') {
+      if (fx.fx === 'ultimate' || fx.fx === 'meteor') M.sfx('big');
+      else if (fx.fx === 'lightning') M.sfx('gift', 30);
+      else if (fx.fx === 'crit') M.sfx('follow');
+      else M.sfx('hit');
+    }
+  });
+  let lastPhase = null; // fim de rodada (vitória, chefe derrotado, estouro) = explosão sonora
+  socket.on('state', (st) => {
+    const end = ['intermission', 'defeated', 'exploded'].includes(st.phase);
+    if (end && lastPhase !== null && lastPhase !== st.phase && window.LiveMusic) window.LiveMusic.sfx('boom');
+    lastPhase = st.phase;
+  });
+
   return { socket, esc, toast };
 })();

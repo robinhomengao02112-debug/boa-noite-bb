@@ -40,6 +40,7 @@
 | A cada 30 minutos | Troca de jogo, sempre entre rodadas. |
 | Aprendizado | Mede as **moedas por minuto** de cada jogo nas lives reais e dá mais tempo de tela aos que rendem mais. Mesmo assim, continua testando os outros 20% das vezes, porque o público muda. |
 | Horário definido | Desliga a live na hora marcada. |
+| Música | Trilha **original**, gerada pelo próprio jogo (um tema por jogo), mais efeitos para presentes e explosões. Não tem direitos autorais de ninguém. O volume fica em `config.json` → `music.volume`. |
 
 ## 4. Atalhos na Área de Trabalho
 - **Painel da Live**: o controle de tudo (`http://127.0.0.1:3001`).

@@ -42,6 +42,7 @@ Servidor do jogo (127.0.0.1:3000): `/health`, `/api/stats?day=`, `/api/aprendiza
 | `obs.*` | Porta e senha do websocket (preenchidas pelo setup), nomes de perfil, coleção, cena e fonte, resolução (base 1080x1920, saída 720x1280, 30 fps), bitrate, `browserHwAccel` (padrão `false` = sem tela preta) |
 | `rotation.enabled / smart / minutesPerGame` | Rodízio ligado, inteligente (aprende) ou em ordem, e minutos por jogo |
 | `rotation.learnMinMinutes / exploreChance` | Minutos mínimos de teste por jogo antes de comparar (30), e chance de testar um jogo qualquer (0,2) |
+| `music.enabled / volume / sfx` | Trilha original gerada no navegador (sem direitos autorais) e efeitos sonoros. Volume de 0 a 1 (padrão 0,5) |
 | `games.<id>` | Ajustes de cada jogo |
 
 ## O que foi testado (OBS Studio 32.2 real, Linux, tela virtual)
@@ -52,6 +53,7 @@ Servidor do jogo (127.0.0.1:3000): `/health`, `/api/stats?day=`, `/api/aprendiza
 - DESLIGAR e desligamento por horário.
 - Segundo controlador aberto por engano → sai sem atrapalhar.
 - Rodízio inteligente → testa todos os jogos e depois prioriza os de mais moedas por minuto.
+- Música → o áudio chega na transmissão (pico de -5,6 dB, contínuo, sem distorção).
 
 **Não testado aqui:** o Windows em si (os scripts `.ps1`, `.bat` e `.vbs`) e a chave real do TikTok. Os pontos que dependem do Windows estão marcados no `COMO-USAR.md`.
 

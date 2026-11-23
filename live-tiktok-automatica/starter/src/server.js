@@ -145,6 +145,7 @@ setInterval(() => {
 
 io.on('connection', (sock) => {
   sock.emit('game', gameId);
+  sock.emit('music', { enabled: true, volume: 0.5, sfx: true, ...(config.music || {}) });
   sock.emit('config', game.publicConfig());
   sock.emit('status', status);
   sock.emit('state', game.snapshot());
