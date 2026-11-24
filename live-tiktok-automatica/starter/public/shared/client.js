@@ -1,4 +1,15 @@
 // Código comum a todos os overlays: conexão, troca automática de jogo, status e utilidades.
+// Ajusta a tela de 1080x1920 ao tamanho da janela (ex.: fonte Link do TikTok LIVE Studio em 720x1280).
+// No OBS (1080x1920) a escala fica 1 e nada muda.
+(function fitToWindow() {
+  const fit = () => {
+    const z = Math.min(window.innerWidth / 1080, window.innerHeight / 1920);
+    document.documentElement.style.zoom = (z > 0 && Math.abs(z - 1) > 0.01) ? String(z) : '';
+  };
+  fit();
+  window.addEventListener('resize', fit);
+})();
+
 window.Live = (function () {
   const socket = io();
   const MY = location.pathname.split('/').filter(Boolean)[0];
